@@ -39,4 +39,8 @@ curl --location 'http://localhost:3000/reports/upload' \
 - ```includeMessages``` accepts a 0 or 1 value. If set to 0, the process will include in the Email report all the messages when showing the grouping from the CSV (not recommended if the CSV file is large)
 
   
+# Configure Email
+We are using ```nodemailer``` to send Emails. Any server is fine but for this project we are using Gmail.
+Go here https://support.google.com/accounts/answer/185833?hl=en&authuser=2 and click on ```Create and manage your app passwords``` to add a password (ehich is different from your password to login to Gmail)
+
 
