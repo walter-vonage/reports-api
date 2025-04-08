@@ -28,10 +28,14 @@ export async function runReportJob(
     // Determine whether groupBy is a named config (with .fields) or a simple string array
     if ((groupBy as GroupConfig[])[0]?.fields) {
         // If groupBy is a list of named group configs (e.g. { name: "By Country", fields: ["country_name"] })
-        for (const g of groupBy as GroupConfig[]) {
-            const result = filterAndGroupReport(filteredRows, filterConfig, g.fields, aggregations, includeMessages);
-            groupResults.push({ name: g.name, groupBy: g.fields, result });
-        }
+        const result = filterAndGroupReport(
+            filteredRows,
+            filterConfig,
+            groupBy as GroupConfig[],
+            aggregations,
+            includeMessages
+        );
+        groupResults.push({ name: 'Grouped Report', groupBy: (groupBy as GroupConfig[]).flatMap(g => g.fields), result });
     } else {
         // If groupBy is just an array of strings like ["status", "country_name"]
         const fields = groupBy as string[];

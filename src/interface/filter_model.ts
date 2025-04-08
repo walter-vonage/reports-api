@@ -16,4 +16,5 @@ export default interface FilterModel {
     operator: Operator;
     value?: string;
     options?: string;
+    convertToDate?: boolean; // This one is used to trim a value and make it: YYYY-MM-DD
 }

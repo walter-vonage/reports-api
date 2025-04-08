@@ -4,7 +4,12 @@ import FilterModel from "../interface/filter_model";
 
 export function applyFilter(row: CsvRow, filter: FilterModel): boolean {
     
-    const val = row[filter.field] || '';
+    let val = row[filter.field] || '';
+
+    // Handle automatic date conversion (from YYYY:MM:DDTHH:MM:SS to simply YYYY:MM:DD)
+    if (filter.convertToDate && /^\d{4}-\d{2}-\d{2}/.test(val)) {
+        val = val.substring(0, 10); // Keep only the "YYYY-MM-DD"
+    }
 
     if (filter.type === 'split') {
         const separator = filter.separator || '|';

@@ -51,13 +51,14 @@ app.get('/_/metrics', async (req, res) => {
 // Upload Report and process
 app.post('/reports/upload', upload.single('file'), async (req: Request, res: Response) => {
 
-    const file = req.file;                                          //  This is the CSV file. What's the biggest size?
-    const reportName = req.body.reportName;                         //  Let's offer some predefined reports? They could send custom as well...
-    const startDate = req.body.startDate;                           //  Start date for the report
-    const endDate = req.body.endDate;                               //  End date for the report
-    const emailTo = req.body.emailTo;                               //  If sent, we report to an Email
-    const includeRows = (req.body.includeRows === '1');             //  Optional if we incliude in the response JSON all the records from the CSV or not
-    const includeMessages = (req.body.includeMessages === '1');     //  Optional if we include in the response JSON the messages once grouped or not
+    const file = req.file;                                              //  This is the CSV file. What's the biggest size?
+    const reportName = req.body.reportName;                             //  Let's offer some predefined reports? They could send custom as well...
+    const startDate = req.body.startDate;                               //  Start date for the report
+    const endDate = req.body.endDate;                                   //  End date for the report
+    const emailTo = req.body.emailTo;                                   //  If sent, we report to an Email
+    const includeRows = (req.body.includeRows === '1');                 //  Optional if we incliude in the response JSON all the records from the CSV or not
+    const includeMessages = (req.body.includeMessages === '1');         //  Optional if we include in the response JSON the messages once grouped or not
+    const data = req.body.data ? JSON.parse( req.body.data ) : null;    //  This field brings parameters to use in the "reportName"
 
     /**
      * Validate
@@ -72,24 +73,12 @@ app.post('/reports/upload', upload.single('file'), async (req: Request, res: Res
     }
 
     try {
-        const filterToUse: FilterConfig | null = getReportByName(reportName);
-        if (!filterToUse) {
+        const reportJob: ReportJob | null = getReportByName(reportName, emailTo, startDate, endDate, data);
+        if (!reportJob) {
             res.status(400).json({ message: 'Invalid report name: ' + reportName });
             return;
         }
-
-        const reportJob: ReportJob = {
-            startDate,                      //  '2025-04-01'
-            endDate,                        //  '2025-04-07'
-            to: '447700900000',
-            groupBy: [{
-                name: 'By Country',
-                fields: ['country_name']
-            }],
-            aggregations: [],
-            emailTo,                        //  If email is provided, we send an HTML
-            filterConfig: filterToUse
-        }
+        const filterToUse = reportJob.filterConfig;
 
         //  1) Download from Vonage Reports API
         // const file = await downloadReport(reportJob.startDate, reportJob.endDate, 'SMS');
