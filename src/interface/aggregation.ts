@@ -1,5 +1,8 @@
+
+type AggregationType = 'sum' | 'count' | 'countDistinct' | 'avg';
+
 export default interface Aggregation {
-    type: 'sum' | 'count' | 'countDistinct';
+    type: AggregationType;
     field: string;
     label: string;
 }

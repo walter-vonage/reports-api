@@ -2,6 +2,11 @@ import FilterConfig from "../interface/filter_config";
 import ReportJob from "../interface/rport_job";
 
 /**
+ * These are the available report names
+ */
+type ReportNamesType = 'deliverByCountry' | 'wordAfterSymbol' | 'multiDayTrend' | 'latencyAnalysisByCountry' | 'errorForFailedMessages';
+
+/**
  * Options for sending data from the POSTMAN payload
  */
 interface DataModel {
@@ -14,21 +19,113 @@ interface DataModel {
 /**
  * We have some predefined reports, to make life easier for customers
  */
-export function getReportByName(name: 'deliverByCountry' | 'wordAfterSymbol' | 'multiDayTrend', emailTo: string | undefined, startDate: string, endDate: string, data: DataModel): ReportJob | null {
+export function getReportByName(name: ReportNamesType, emailTo: string | undefined, startDate: string, endDate: string, data: DataModel): ReportJob | null {
+
     console.log("Report name", name)
+
     if (name == 'deliverByCountry') {
         const countryName: string | undefined = data.countryName;
         const columnName: string | undefined = data.columnName;
         return getDeliveredByCoountry(startDate, endDate, countryName, columnName, emailTo)
+
     } else if (name == 'wordAfterSymbol') {
         const columnName: string | undefined = data.columnName;
         const wordToFind: string | undefined = data.wordToFind;
         const symbol: string | undefined = data.symbol;
         return findWordAfterCharacter(startDate, endDate, emailTo, columnName, wordToFind, symbol)
+
     } else if (name == 'multiDayTrend') {
         return multiDayTrends(startDate, endDate, emailTo);
+
+    } else if (name == 'latencyAnalysisByCountry') {
+        return latencyAnalysisByCountry(startDate, endDate, emailTo);
+
+    } else if (name == 'errorForFailedMessages') {
+        return errorForFailedMessages(startDate, endDate, emailTo);
+
     } else {
         return null;
+    }
+}
+
+/**
+ * Ideal for understanding what errors you have in your failed messages
+ */
+function errorForFailedMessages(startDate: string, endDate: string, emailTo: string | undefined): ReportJob {
+    return {
+        "startDate": startDate,
+        "endDate": endDate,
+        "emailTo": emailTo,
+        "filterConfig": {
+            "logic": "AND",
+            "filters": [
+                {
+                    "field": "status",
+                    "type": "text",
+                    "operator": "equals",
+                    "value": "failed"
+                }
+            ]
+        },
+        "groupBy": [
+            {
+                "name": "Failures by Country and Error",
+                "fields": ["country_name", "error_code_description"]
+            }
+        ],
+        "aggregations": [
+            {
+                "type": "count",
+                "field": "id",
+                "label": "Failed Count"
+            }
+        ]
+    }
+}
+
+
+/**
+ * Ideal if you want to check average delivery latency per country.
+ */
+function latencyAnalysisByCountry(startDate: string, endDate: string, emailTo: string | undefined): ReportJob {
+    return {
+        "startDate": startDate,
+        "endDate": endDate,
+        "emailTo": emailTo,
+        "filterConfig": {
+            "logic": "AND",
+            "filters": [
+                {
+                    "field": "status",
+                    "type": "text",
+                    "operator": "equals",
+                    "value": "delivered"
+                }
+            ]
+        },
+        "groupBy": [
+            {
+                "name": "Delivery Latency by Country",
+                "fields": ["country_name"]
+            }
+        ],
+        "aggregations": [
+            {
+                "type": "sum",
+                "field": "latency",
+                "label": "Total Latency"
+            },
+            {
+                "type": "count",
+                "field": "latency",
+                "label": "Delivery Count"
+            },
+            {
+                "type": "avg",
+                "field": "latency",
+                "label": "Avg Latency (ms)"
+            }
+        ]
     }
 }
 

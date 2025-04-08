@@ -79,6 +79,7 @@ app.post('/reports/upload', upload.single('file'), async (req: Request, res: Res
             return;
         }
         const filterToUse = reportJob.filterConfig;
+        console.log('filterToUse', filterToUse)
 
         //  1) Download from Vonage Reports API
         // const file = await downloadReport(reportJob.startDate, reportJob.endDate, 'SMS');
