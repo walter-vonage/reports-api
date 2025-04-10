@@ -354,6 +354,6 @@ If you are planning to change this code or improve it, here are some considerati
 
 ## Configure Email
 We are using ```nodemailer``` to send Emails. Any server is fine but for this project we are using Gmail.
-Go here https://support.google.com/accounts/answer/185833?hl=en&authuser=2 and click on ```Create and manage your app passwords``` to add a password (ehich is different from your password to login to Gmail)
+Go here https://support.google.com/accounts/answer/185833?hl=en&authuser=2 and click on ```Create and manage your app passwords``` to add a password (which is different from your password to login to Gmail)
 
 
