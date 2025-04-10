@@ -245,6 +245,109 @@ You can ask the service to calculate the average latency value.
 }]
 ```
 
+# Endpoints
+These are all the current endpoints:
+
+## Download and create a report
+Send a ```POST``` request to ```/reports``` - This is an example of a JSON body:
+```
+{
+    "apiKey": "XXXXX",
+    "apiSecret": "XXXXXXX",
+    "accountId": "XXXXXXX",
+    "startDate": "2025-04-01",
+    "endDate": "2025-04-02",
+    "product": "MESSAGES",
+    "direction": "outbound",
+    "include_subaccounts": false,
+    "include_messages": false,
+    "emailTo": "my.email@vonage.com",
+    "includeRows": false,
+    "includeMessages": true,
+    "cron": {
+        "startAt": "16:20",
+        "mon": false,
+        "tue": false,
+        "wed": false,
+        "thu": false,
+        "fri": false,
+        "sat": false,
+        "sun": false
+    },
+    "reportJob": {
+        "filterConfig": {
+            "logic": "AND",
+            "filters": []
+        },
+        "groupBy": [
+            {
+                "name": "Grouped by Country",
+                "fields": ["country"]
+            }
+        ],
+        "aggregations": [
+            {
+                "type": "count",
+                "field": "id",
+                "label": "Total Messages"
+            },
+            {
+                "type": "sum",
+                "field": "total_price",
+                "label": "Total Spend"
+            }
+        ]
+    }
+}
+```
+
+## Download and create a report without sending customer credentials
+If you want to create a report without exposing sensitive data, then you must first create an entry with the ApiKey and ApiSecret. They will be stored for using on other requests.
+
+Send a ```POST``` request to ```/customers/credentials``` with a JSON body like this:
+```
+{
+    "name": "My Customer Name",
+    "apiKey": "XXXXX",
+    "apiSecret": "XXXXXXX",
+    "accountId": "XXXX"
+}
+```
+Once you do that, you can then simply make the call by ```name```
+```
+{
+    "customerName": "My Customer Name",
+    "startDate": "2025-04-01",
+    "endDate": "2025-04-02",
+    "product": "MESSAGES",
+    "direction": "outbound",
+    "include_subaccounts": false,
+    "include_messages": false,
+    ... etc
+```
+
+## Upload a report manually
+If you already have a downloaded Vonage Reports API and want to proceed with the filtering and/or grouping, then send a POST request to ```reports/upload``` and send ```form-data``` key:value pairs.
+
+```file```: The CSV file to be processed. Currently we support up to 1 GB of data.
+```includeRows```: ```"true"``` or ```"false"```
+```includeMessages```: ```"true"``` or ```"false"```
+```reportJob```: [send the full reportJob object as mentioned before. Send it as text]
+
+## List Cron Jobs
+To know what cron jobs are running, send a GET request to ```/crons/list``` 
+
+## Stop Cron Job
+To stop a current running cron job, send a POST request to ```/crons/cancel``` with the resulting information from the previous GET query. Example:
+```
+{
+    "cron": "1 21 * * 1,2,3,4,5",
+    "startDate": "2025-04-01",
+    "endDate": "2025-04-07",
+    "email": "my.email@vonage.com"
+}
+```
+
 
 # For Developers
 If you are planning to change this code or improve it, here are some considerations.
