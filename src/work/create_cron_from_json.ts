@@ -1,32 +1,50 @@
+import { Request, Response } from 'express';
 import { CronSchedule } from "../interface/cron_schedule";
-import cron from 'node-cron';
-import CsvRow from "../interface/csv_row";
-import ReadCSV from "./read_csv";
-import FilterConfig from "../interface/filter_config";
-import { filterDataRows } from "./filter_data";
-import { runReportJob } from "./report.worker";
-import ReportJob from "../interface/rport_job";
-import { downloadTestReport } from "./download_report";
 import { scheduledJobs } from "../constants/cron_scheduled_jobs";
+import CustomerSecret from '../interface/customer_secret';
+import ReportRequestModel from '../interface/report_request';
+import initiateDownloadReport from './download_report';
+const nodeCron = require('node-cron');
 
 /**
  * This function will create a Cron job and run the process as defined
- * @param reportJob : The report condition
- * @param filterToUse : The filter to apply to the CSV data
- * @param schedule : How often you want to run this Cron
- * @returns 
  */
-export function createCronExpressionFromJson(
-    reportJob: ReportJob, 
-    filterToUse: FilterConfig, 
-    schedule: CronSchedule,
-    includeMessages: boolean
-): boolean {
+export function createCronExpressionFromJson(CUSTOMER_SECRETS: Array<CustomerSecret>, REPORT_REQUESTS: Array<ReportRequestModel>, req: Request, res: Response): boolean {
     
-    const cronExpr = getCronExpressionFromJson(schedule);
+    const customerName = req.body.customerName || null;
+    let   apiKey = req.body.apiKey || null;
+    let   apiSecret = req.body.apiSecret || null;                               
+    let   accountId = req.body.accountId || null;
+    const startDate = req.body.startDate;                               
+    const endDate = req.body.endDate;                                   
+    const product = req.body.product || 'SMS';                          
+    const direction = req.body.direction || 'outbound';                 
+    const include_subaccounts = req.body.include_subaccounts;           
+    const emailTo = req.body.emailTo;                                   
+    const includeRows = req.body.includeRows;
+    const includeMessages = req.body.includeMessages;
+    const cron = req.body.cron;
+    const reportJob = req.body.reportJob;
+
+    if (!apiKey || !apiSecret || !accountId) {
+        const customerData = CUSTOMER_SECRETS.find((i:CustomerSecret) => i.name == customerName);
+        if (customerData && customerData.apiKey && customerData.apiSecret && customerData.accountId) {
+            apiKey = customerData.apiKey;
+            apiSecret = customerData.apiSecret;
+            accountId = customerData.accountId;
+        } else {
+            res.status(200).json({
+                success: false,
+                message: 'No ApiKey or customer information'
+            })
+            return false;
+        }
+    }
+
+    const cronExpr = getCronExpressionFromJson(cron);
 
     // Create a unique key for this job
-    const key = `${cronExpr}|${reportJob.startDate}|${reportJob.endDate}|${reportJob.emailTo || 'no-email'}`;
+    const key = `${cronExpr}|${startDate}|${endDate}|${emailTo || 'no-email'}`;
 
     // If key exists, skip it
     if (scheduledJobs.has(key)) {
@@ -36,17 +54,34 @@ export function createCronExpressionFromJson(
 
     console.log(`Scheduling report job with cron: ${cronExpr}`);
 
-    const task = cron.schedule(cronExpr, async () => {
+    const task = nodeCron.schedule(cronExpr, async () => {
         try {
-            //  1) Download a fresh CSV file
-            const file = await downloadTestReport();
+            if ((apiKey && apiSecret && accountId) || customerName) {
 
-            //  1) Read and process the CSV
-            const content: CsvRow[] = await ReadCSV(file);
-            const filteredRows = filterDataRows(content, filterToUse);
-            await runReportJob(reportJob, filteredRows, includeMessages);
-
-            console.log(`Report generated and processed at ${new Date().toISOString()}`);
+                const response = await initiateDownloadReport(
+                    req,
+                    res,
+                    CUSTOMER_SECRETS, 
+                    REPORT_REQUESTS,
+                    apiKey, 
+                    apiSecret, 
+                    accountId, 
+                    startDate, 
+                    endDate, 
+                    product, 
+                    include_subaccounts, 
+                    direction,
+                    emailTo,
+                    includeRows,
+                    includeMessages,
+                    reportJob,
+                    false,
+                );
+            
+                REPORT_REQUESTS.push( response )
+                
+                console.log(`CRON - Report generated and processed at ${new Date().toISOString()}`);        
+            }
         } catch (e) {
             console.error('Cron job error:', e);
         }

@@ -19,8 +19,6 @@ export async function runReportJob(
     const groupBy = reportJob.groupBy;               // Fields or named groups to group the data by
     const filterConfig = reportJob.filterConfig;     // Filtering logic already applied (optional)
     const aggregations = reportJob.aggregations;     // Aggregation instructions (e.g. sum, count, etc.)
-    const emailTo = reportJob.emailTo;               // Recipient email for the report
-    const startDate = reportJob.startDate;           // Used in email subject line
 
     // Will store each group result set
     const groupResults: { name: string; groupBy: string[]; result: GroupResult[] }[] = [];
@@ -41,12 +39,6 @@ export async function runReportJob(
         const fields = groupBy as string[];
         const result = filterAndGroupReport(filteredRows, filterConfig, fields, aggregations, includeMessages);
         groupResults.push({ name: `Grouped by ${fields.join(', ')}`, groupBy: fields, result });
-    }
-
-    // If an email was provided, build and send the report as HTML
-    if (emailTo) {
-        const html = generateHtmlReport(groupResults);
-        await sendReportEmail(emailTo, `Your Reports SMS email (${startDate})`, html);
     }
 
     // Return the grouping output

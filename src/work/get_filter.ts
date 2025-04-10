@@ -4,7 +4,7 @@ import ReportJob from "../interface/rport_job";
 /**
  * These are the available report names
  */
-type ReportNamesType = 'deliverByCountry' | 'wordAfterSymbol' | 'multiDayTrend' | 'latencyAnalysisByCountry' | 'errorForFailedMessages';
+type ReportNamesType = 'deliverByCountry' | 'wordAfterSymbol' | 'multiDayTrend' | 'latencyAnalysisByCountry' | 'errorForFailedMessages' | 'test';
 
 /**
  * Options for sending data from the POSTMAN payload
@@ -19,43 +19,66 @@ interface DataModel {
 /**
  * We have some predefined reports, to make life easier for customers
  */
-export function getReportByName(name: ReportNamesType, emailTo: string | undefined, startDate: string, endDate: string, data: DataModel): ReportJob | null {
+export function getReportByName(name: ReportNamesType, data: DataModel): ReportJob | null {
 
     console.log("Report name", name)
 
     if (name == 'deliverByCountry') {
         const countryName: string | undefined = data.countryName;
         const columnName: string | undefined = data.columnName;
-        return getDeliveredByCoountry(startDate, endDate, countryName, columnName, emailTo)
+        return getDeliveredByCoountry(countryName, columnName)
 
     } else if (name == 'wordAfterSymbol') {
         const columnName: string | undefined = data.columnName;
         const wordToFind: string | undefined = data.wordToFind;
         const symbol: string | undefined = data.symbol;
-        return findWordAfterCharacter(startDate, endDate, emailTo, columnName, wordToFind, symbol)
+        return findWordAfterCharacter(columnName, wordToFind, symbol)
 
     } else if (name == 'multiDayTrend') {
-        return multiDayTrends(startDate, endDate, emailTo);
+        return multiDayTrends(  );
 
     } else if (name == 'latencyAnalysisByCountry') {
-        return latencyAnalysisByCountry(startDate, endDate, emailTo);
+        return latencyAnalysisByCountry(    );
 
     } else if (name == 'errorForFailedMessages') {
-        return errorForFailedMessages(startDate, endDate, emailTo);
+        return errorForFailedMessages();
+
+    } else if (name == 'test') {
+        return getTest();
 
     } else {
         return null;
     }
 }
 
+//  Group by status and error code and count records 
+function getTest(): ReportJob {
+    return {
+        "filterConfig": {
+            logic: 'AND',
+            filters: []
+        },
+        "groupBy": [
+            {
+                "name": "Group By Status",
+                "fields": ["status"]
+            }
+        ],
+        "aggregations": [
+            {
+                "type": "count",
+                "field": "id",
+                "label": "Count"
+            }
+        ]
+    }
+}
+
 /**
  * Ideal for understanding what errors you have in your failed messages
  */
-function errorForFailedMessages(startDate: string, endDate: string, emailTo: string | undefined): ReportJob {
+function errorForFailedMessages(): ReportJob {
     return {
-        "startDate": startDate,
-        "endDate": endDate,
-        "emailTo": emailTo,
         "filterConfig": {
             "logic": "AND",
             "filters": [
@@ -87,11 +110,8 @@ function errorForFailedMessages(startDate: string, endDate: string, emailTo: str
 /**
  * Ideal if you want to check average delivery latency per country.
  */
-function latencyAnalysisByCountry(startDate: string, endDate: string, emailTo: string | undefined): ReportJob {
+function latencyAnalysisByCountry(): ReportJob {
     return {
-        "startDate": startDate,
-        "endDate": endDate,
-        "emailTo": emailTo,
         "filterConfig": {
             "logic": "AND",
             "filters": [
@@ -132,11 +152,8 @@ function latencyAnalysisByCountry(startDate: string, endDate: string, emailTo: s
 /**
  * Idea for tracking how many messages were received each day.
  */
-function multiDayTrends(startDate: string, endDate: string, emailTo: string | undefined): ReportJob {
+function multiDayTrends(): ReportJob {
     return {
-        "startDate": startDate,
-        "endDate": endDate,
-        "emailTo": emailTo,
         "filterConfig": {
             "logic": "AND",
             "filters": []
@@ -161,12 +178,9 @@ function multiDayTrends(startDate: string, endDate: string, emailTo: string | un
 /**
  * Ideal if you want to filter the CSV where the "client_ref" column contains the word "Marc" exists after a "*"
  */
-function findWordAfterCharacter(startDate: string, endDate: string, emailTo: string | undefined, columnName: string | undefined, wordToFind: string | undefined, symbol: string | undefined): ReportJob {
+function findWordAfterCharacter(columnName: string | undefined, wordToFind: string | undefined, symbol: string | undefined): ReportJob {
     const escaped = `\\${symbol}.*${wordToFind}`;
     return {
-        "startDate": startDate,
-        "endDate": endDate,
-        "emailTo": emailTo,
         "filterConfig": {
             "logic": "AND",
             "filters": [
@@ -203,11 +217,8 @@ function findWordAfterCharacter(startDate: string, endDate: string, emailTo: str
 /**
  * Ideal if you want to filter one specific country and group by a column name like "client_ref" and then: count, sum and count different error types
  */
-function getDeliveredByCoountry(startDate: string, endDate: string, countryName: string | undefined, columnName: string | undefined, emailTo: string | undefined): ReportJob {
+function getDeliveredByCoountry(countryName: string | undefined, columnName: string | undefined): ReportJob {
     return {
-        "startDate": startDate,
-        "endDate": endDate,
-        "emailTo": emailTo ? emailTo : "",
         "filterConfig": {
             "logic": "AND",
             "filters": [
