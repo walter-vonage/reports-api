@@ -1,45 +1,255 @@
 # Vonage Reports API
-This project will filter the content of the big CSV file downloaded and then it will apply grouping.
+This project performs several tasks using Vonage Reports API.
+1) Based on your parameters, it will download a report from Reports API.
+2) Once the report is downloaded, it will apply FILTERS and GROUPING you define from your JSON request.
 
-## Send a basic JSON request from Postman
-This is an example to upload a downloaded file from your computer. Replace ```file=@"/Users/warodriguez/Documents/VONAGE/REPORTS/OTHER/marc-report_SMS_6ef638c4_20250401.csv"```
+## Example of JSON to send
+Let's see some examples of what you can send:
+```
+{
+    "apiKey": "XXXXX",
+    "apiSecret": "XXXX",
+    "accountId": "xxx",
+    "startDate": "2025-04-01",
+    "endDate": "2025-04-02",
+    "product": "MESSAGES",
+    "direction": "outbound",
+    "include_subaccounts": false,
+    "include_messages": false,
+    "emailTo": "my.email@vonage.com",
+    "includeRows": false,
+    "includeMessages": true,
+    "cron": {
+        "startAt": "16:20",
+        "mon": false,
+        "tue": false,
+        "wed": false,
+        "thu": false,
+        "fri": false,
+        "sat": false,
+        "sun": false
+    },
+    "reportJob": {
+        "filterConfig": {
+            "logic": "AND",
+            "filters": []
+        },
+        "groupBy": [
+            {
+                "name": "Grouped by Country",
+                "fields": ["country"]
+            }
+        ],
+        "aggregations": [
+            {
+                "type": "count",
+                "field": "id",
+                "label": "Total Messages"
+            },
+            {
+                "type": "sum",
+                "field": "total_price",
+                "label": "Total Spend"
+            }
+        ]
+    }
+}
+```
+
+## These are parameters defined in the Vonage Reports API
+
+```apiKey```: The Api Key to use.
+```apiSecret```: The Api Secret to use.
+```accountId```: This can be the same master Api Key defined or any sub-key.
+```startDate```: Starting date for download the data inside the report.
+```endDate```: End date for download the data inside the report.
+```product```: This is also what Vonage product you want to download data from.
+```direction```: If this report will include inbound or outbound data.
+```include_subaccounts```: If the accountId value is a master key, this parameter defines if sub-accounts must be included or not.
+```include_messages```: This defines if you want to download the text of messages sent.
+
+## These are for the resulting report
+
+```emailTo```: Send this to receive a link to your final report.
+```includeRows```: Respond ```true``` or ```false``` if you want to see or not the actual CSV data once the report is filtered and grouped.
+```includeMessages```: Respond ```true``` or ```false``` if you want to see or not a JSON object of the resulting messages once the report is filtered and grouped.
+
+## Repeat the process
+If you send this object, we will create a cron process which will be executed as specified in the parameters.
+```
+"cron": {
+        "startAt": "16:20",
+        "mon": false,
+        "tue": false,
+        "wed": false,
+        "thu": false,
+        "fri": false,
+        "sat": false,
+        "sun": false
+    },
+```
+# ReportJob
+This last object is the one used to define the filtering and the grouping of the data.
+
+# Filtering
+Before grouping the data you can filter it and leave only what you want to focus on.
+You can define one or more filters for the data. Use ```AND``` or ```OR```  to include all the conditions or just one of them.
 
 ```
-curl --location 'http://localhost:3000/reports/upload' \
---form 'file=@"/Users/warodriguez/Documents/VONAGE/REPORTS/OTHER/marc-report_SMS_6ef638c4_20250401.csv"' \
---form 'reportName="undeliveredByCountry"' \
---form 'startDate="2025-04-01"' \
---form 'endDate="2025-04-07"' \
---form 'emailTo="walter.rodriguez@vonage.com"' \
---form 'cron="{
-    \"startAt\": \"21:01\",
-    \"mon\": true,
-    \"tue\": true,
-    \"wed\": true,
-    \"thu\": true,
-    \"fri\": true,
-    \"sat\": false,
-    \"sun\": false
-  }"' \
---form 'includeRows="0"' \
---form 'includeMessages="0"'
+FilterConfig = {
+    logic: 'OR',
+    filters: [...]
+}
 ```
 
-1) The process will open the uploaded file
-2) Will apply a preconfigured filtering:
-    a) Get all undelivered messages
-    b) Will group by country and count the records
-3) Then it will send an email to ```walter.rodriguez@vonage.com```
-4) Then it will create a ```Cron Job``` to repeat this process every ```weekday``` at ```9pm```
+The following are all the operators for filtering. Let us know if you need any other.
 
-### Notes
-- ```emailTo``` is optional
-- ```cron``` is optional
-- ```includeRows``` accepts a 0 or 1 value. If set to 0, the process will include in the Email report all the rows filtered from the CSV (not recommended if the CSV file is large)
-- ```includeMessages``` accepts a 0 or 1 value. If set to 0, the process will include in the Email report all the messages when showing the grouping from the CSV (not recommended if the CSV file is large)
+## Split
+Matches if the 2nd segment (index 1) of client_ref (split by '|') is exactly the word ```walter```
+```
+  filters: [
+    {
+      field: 'client_ref',
+      type: 'split',
+      separator: '|',
+      position: 1,
+      operator: 'equals',
+      value: 'walter'
+    },
+```
 
-  
-# Configure Email
+## Split with Regex
+The same as before but using Regex. Matches if the 2nd segment starts with 'b0c099ca'
+```
+    {
+      field: 'client_ref',
+      type: 'split',
+      separator: '|',
+      position: 1,
+      operator: 'regex',
+      value: '^b0c099ca'
+    },
+```
+
+## beforeDash
+Matches if the part BEFORE the first separator in the 2nd segment equals 'b0c099ca'
+```
+    {
+      field: 'client_ref',
+      type: 'split',
+      separator: '|',
+      position: 1,
+      operator: 'beforeDash',
+      value: 'b0c099ca'
+    },
+```
+
+## Regex
+Matches if the whole client_ref contains 'walter' (case-insensitive)
+```
+    {
+      field: 'client_ref',
+      type: 'text',
+      operator: 'regex',
+      value: 'walter',
+      options: 'i'
+    },
+```
+ 
+Similar to before but this matches if client_ref ends with a slash
+```
+    {
+      field: 'client_ref',
+      type: 'text',
+      operator: 'regex',
+      value: '/$'
+    },
+```
+
+## Last Exists
+Matches if splitting by '/' yields a last segment that is NOT empty
+NOTE: Will NOT match if client_ref ends with a slash like "abc/def/"
+```
+    {
+      field: 'client_ref',
+      type: 'split',
+      separator: '/',
+      position: 'last',
+      operator: 'exists'
+    },
+```
+
+## afterChar
+Matches if there’s a slash '/' and something comes after it (even just one character)
+```
+    {
+      field: 'client_ref',
+      type: 'text',
+      operator: 'afterChar',
+      value: '/'
+    },
+```
+
+# Grouping
+Once the report is filtered (or not) you can group the results so they are better organised.
+You can add one or more grouping. These are some ideas:
+
+## Group by Phone
+You can also define a name for the grouping so it's easy to understand.
+```
+"groupBy": [{
+    "name": "Grouped by Recipient",
+    "fields": ["to"]
+}]
+```
+
+## Group by messages by Day
+This will group messages by the column called ```date_received```
+```
+"groupBy": [{
+    "name": "Messages by Day",
+    "fields": ["date_received"],
+    "convertToDate": true
+}]
+```
+
+# Aggregations
+Aggregations allow you to get totals or average of the grouped information in the report. You can define one or many.
+The options are: ```sum``` ```count``` ```countDistinct```  ```avg```
+
+## Example with SUM
+If you want to sum all the resulting messages in each group, define something like:
+```
+"aggregations": [{
+    "type": "count",
+    "field": "id",
+    "label": "Messages Sent"
+}]
+```
+
+## Example with Average
+You can ask the service to calculate the average latency value.
+```
+"aggregations": [{
+    "type": "sum",
+    "field": "latency",
+    "label": "Total Latency"
+}, {
+    "type": "count",
+    "field": "latency",
+    "label": "Delivery Count"
+}, {
+    "type": "avg",
+    "field": "latency",
+    "label": "Avg Latency (ms)"
+}]
+```
+
+
+# For Developers
+If you are planning to change this code or improve it, here are some considerations.
+
+## Configure Email
 We are using ```nodemailer``` to send Emails. Any server is fine but for this project we are using Gmail.
 Go here https://support.google.com/accounts/answer/185833?hl=en&authuser=2 and click on ```Create and manage your app passwords``` to add a password (ehich is different from your password to login to Gmail)
 
