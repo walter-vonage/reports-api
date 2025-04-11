@@ -406,6 +406,9 @@ Just run ```npm run deploy:vcr``` This will do the following tasks:
 - Copy the ```node_modules``` folder into ```/dist```
 - run ```vcr deploy```
 
+## Test with POSTMAN
+Check the file ```REPORTS PROJECT.postman_collection.json``` and use it yourself. In the ```variables``` section, update with the URL you want (current one is the actual deployed VCR instace from my account) 
+
 ## Configure Email
 We are using ```nodemailer``` to send Emails. Any server is fine but for this project we are using Gmail.
 Go here https://support.google.com/accounts/answer/185833?hl=en&authuser=2 and click on ```Create and manage your app passwords``` to add a password (which is different from your password to login to Gmail)
