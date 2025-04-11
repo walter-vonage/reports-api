@@ -20,6 +20,7 @@ export function createCronExpressionFromJson(CUSTOMER_SECRETS: Array<CustomerSec
     const product = req.body.product || 'SMS';                          
     const direction = req.body.direction || 'outbound';                 
     const include_subaccounts = req.body.include_subaccounts;           
+    const include_messages = req.body.include_messages;           
     const emailTo = req.body.emailTo;                                   
     const includeRows = req.body.includeRows;
     const includeMessages = req.body.includeMessages;
@@ -70,6 +71,7 @@ export function createCronExpressionFromJson(CUSTOMER_SECRETS: Array<CustomerSec
                     endDate, 
                     product, 
                     include_subaccounts, 
+                    include_messages,
                     direction,
                     emailTo,
                     includeRows,

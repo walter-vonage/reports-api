@@ -57,7 +57,7 @@ export default async function ProcessUploadedDataFromUser(req: Request, res: Res
     const htmlContent = generateHtmlReport(reportResult.groupResults);
     
     // 7) Save the HTML version to a file
-    const DOWNLOAD_FOLDER = path.resolve(__dirname, '../../downloads');
+    const DOWNLOAD_FOLDER = path.resolve(__dirname, '../downloads');
     const htmlFilename = `report_${Date.now()}.html`;
     const htmlPath = path.join(DOWNLOAD_FOLDER, htmlFilename);
     fs.writeFileSync(htmlPath, htmlContent, 'utf8');

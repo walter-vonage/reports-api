@@ -18,7 +18,7 @@ import { filterDataRows } from './filter_data';
  */
 export default async function CheckPeriodicallyForDownloadedReports(REPORT_REQUESTS: Array<ReportRequestModel>) {
     
-    const DOWNLOAD_FOLDER = path.resolve(__dirname, '../../downloads');
+    const DOWNLOAD_FOLDER = path.resolve(__dirname, '../downloads');
 
     setInterval(async () => {
 

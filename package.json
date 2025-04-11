@@ -3,9 +3,15 @@
     "version": "1.0.0",
     "main": "dist/index.js",
     "scripts": {
+        "clean": "rm -rf dist",
         "build": "tsc",
+        "copy:modules": "cp -R node_modules dist/node_modules",
+        "copy:config": "cp vcr.yml dist/vcr.yml",
+        "copy:package": "cp package.json dist/",
+        "deploy:vcr": "npm run clean && npm run build && npm run copy:modules && npm run copy:config && npm run copy:package && cd dist && npm run deploy",
         "start": "node dist/index.js",
-        "dev": "npm run build && npm start"
+        "dev": "npm run build && npm start",
+        "deploy": "/Users/warodriguez/.vcr/bin/vcr deploy"
     },
     "keywords": [],
     "author": "",

@@ -29,7 +29,7 @@ const CUSTOMER_SECRETS: Array<CustomerSecret> = [];
 /**
  * Ensure uploads directory exists
  */
-const uploadDir = path.join(__dirname, '..', 'uploads');
+const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir);
 }
@@ -37,7 +37,7 @@ if (!fs.existsSync(uploadDir)) {
 /**
  * Ensure downloads directory exists
  */
-const downloadsDir = path.resolve(__dirname, '..', 'downloads');
+const downloadsDir = path.resolve(__dirname, 'downloads');
 if (!fs.existsSync(downloadsDir)) {
   fs.mkdirSync(downloadsDir);
 }
@@ -48,7 +48,7 @@ if (!fs.existsSync(downloadsDir)) {
 const upload = multer({
     dest: uploadDir,
     limits: {
-        fileSize: 30 * 1024 * 1024, // 10MB in bytes
+        fileSize: 5 * 1024 * 1024 * 1024, // 1GB in bytes
     },
 });
 

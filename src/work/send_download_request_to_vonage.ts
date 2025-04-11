@@ -19,6 +19,7 @@ export default async function SendDownloadRequestToVonage(CUSTOMER_SECRETS: Arra
     const product = req.body.product || 'SMS';                          
     const direction = req.body.direction || 'outbound';                 
     const include_subaccounts = req.body.include_subaccounts;           
+    const include_messages = req.body.include_messages;           
     const emailTo = req.body.emailTo;                                   
     const includeRows = req.body.includeRows;
     const includeMessages = req.body.includeMessages;
@@ -51,6 +52,7 @@ export default async function SendDownloadRequestToVonage(CUSTOMER_SECRETS: Arra
         endDate, 
         product, 
         include_subaccounts, 
+        include_messages,
         direction,
         emailTo,
         includeRows,

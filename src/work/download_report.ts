@@ -20,6 +20,7 @@ export default async function initiateDownloadReport(
     endDate: string,
     product: 'SMS' | 'MESSAGES',
     include_subaccounts: boolean,
+    include_messages: boolean,
     direction: 'outbound' | 'inbound',
     emailTo: string | undefined,
     includeRows: boolean,
@@ -35,6 +36,7 @@ export default async function initiateDownloadReport(
         date_start: `${startDate}T00:00:00+00:00`,
         date_end: `${endDate}T00:00:00+00:00`,
         include_subaccounts,
+        include_messages,
         callback_url: CALLBACK_URL, // This is your public endpoint
     };
 
