@@ -342,9 +342,13 @@ Once you do that, you can then simply make the call by ```name```
 If you already have a downloaded Vonage Reports API and want to proceed with the filtering and/or grouping, then send a POST request to ```reports/upload``` and send ```form-data``` key:value pairs.
 
 ```file```: The CSV file to be processed. Currently we support up to 1 GB of data.
+
 ```includeRows```: ```"true"``` or ```"false"```
+
 ```includeMessages```: ```"true"``` or ```"false"```
+
 ```reportJob```: [send the full reportJob object as mentioned before. Send it as text]
+
 
 ## List Cron Jobs
 To know what cron jobs are running, send a GET request to ```/crons/list``` 
