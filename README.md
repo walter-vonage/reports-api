@@ -368,6 +368,42 @@ To stop a current running cron job, send a POST request to ```/crons/cancel``` w
 # For Developers
 If you are planning to change this code or improve it, here are some considerations.
 
+## Source code
+This is a Typescript project. To be able to use it in Vonage's VCR, see below some minor considerations.
+
+## Folder structure
+/src
+    - index.ts : Main starting file
+    - config.ts : Main basic configuration
+    /work
+        - Single files for single tasks
+    /interface
+        - Data interface
+    /constants
+        - Data constants
+/vcr.yml
+/package.json
+/dist
+    - All the files converted from Typescript to Javascript
+
+## Run locally
+You just need to have Typescript installed (tsc)
+Typescript is compiled and the result is placed inside the ```dist``` folder.
+```
+npm run dev
+```
+This will execute:
+- tsc
+- node dist/index.js
+
+## Deploy to VCR
+Just run ```npm run deploy:vcr``` This will do the following tasks:
+- Convert the Typescript files into Javascript
+- Copy the ```vcr.yml``` file into ```/dist```
+- Copy the ```package.json``` file into ```/dist```
+- Copy the ```node_modules``` folder into ```/dist```
+- run ```vcr deploy```
+
 ## Configure Email
 We are using ```nodemailer``` to send Emails. Any server is fine but for this project we are using Gmail.
 Go here https://support.google.com/accounts/answer/185833?hl=en&authuser=2 and click on ```Create and manage your app passwords``` to add a password (which is different from your password to login to Gmail)
