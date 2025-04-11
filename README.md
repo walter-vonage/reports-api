@@ -118,6 +118,17 @@ The following are all the operators for filtering. Let us know if you need any o
 
 ## Don't include rows if column country is empty
 This will filter out rows without any value in the column ```country```
+
+```
+{
+    "field": "country",
+    "type": "text",
+    "operator": "regex",
+    "value": "^(?!$).*",
+    "options": "i" // optional: case-insensitive
+}
+```
+Or you can use this:
 ```
 {
   field: "country",
