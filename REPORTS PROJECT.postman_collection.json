@@ -1,0 +1,206 @@
+{
+	"info": {
+		"_postman_id": "d6e80f6f-db22-4b6f-ba91-4783166eecaf",
+		"name": "REPORTS PROJECT",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "1541638"
+	},
+	"item": [
+		{
+			"name": "1) ASK_FOR_REPORT",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"apiKey\": \"\",\n    \"apiSecret\": \"\",\n    \"accountId\": \"\",\n    \"startDate\": \"2025-04-01\",\n    \"endDate\": \"2025-04-02\",\n    \"product\": \"MESSAGES\",\n    \"direction\": \"outbound\",\n    \"include_subaccounts\": false,\n    \"include_messages\": false,\n    \"emailTo\": \"walter.rodriguez@vonage.com\",\n    \"includeRows\": false,\n    \"includeMessages\": true,\n    \"cron\": {\n        \"startAt\": \"16:20\",\n        \"mon\": false,\n        \"tue\": false,\n        \"wed\": false,\n        \"thu\": false,\n        \"fri\": false,\n        \"sat\": false,\n        \"sun\": false\n    },\n    \"reportJob\": {\n        \"filterConfig\": {\n            \"logic\": \"AND\",\n            \"filters\": []\n        },\n        \"groupBy\": [\n            {\n                \"name\": \"Grouped by Country\",\n                \"fields\": [\"country\"]\n            }\n        ],\n        \"aggregations\": [\n            {\n                \"type\": \"count\",\n                \"field\": \"id\",\n                \"label\": \"Total Messages\"\n            },\n            {\n                \"type\": \"sum\",\n                \"field\": \"total_price\",\n                \"label\": \"Total Spend\"\n            }\n        ]\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{server}}/reports",
+					"host": [
+						"{{server}}"
+					],
+					"path": [
+						"reports"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "2) ASK_FOR_REPORT WITHOUT SENDING CREDENTIALS",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"customerName\": \"test\",\n    \"startDate\": \"2025-04-01\",\n    \"endDate\": \"2025-04-02\",\n    \"product\": \"MESSAGES\",\n    \"direction\": \"outbound\",\n    \"include_subaccounts\": false,\n    \"include_messages\": false,\n    \"emailTo\": \"walter.rodriguez@vonage.com\",\n    \"includeRows\": false,\n    \"includeMessages\": true,\n    \"cron\": {\n        \"startAt\": \"16:13\",\n        \"mon\": false,\n        \"tue\": false,\n        \"wed\": false,\n        \"thu\": false,\n        \"fri\": false,\n        \"sat\": false,\n        \"sun\": false\n    },\n    \"reportJob\": {\n        \"filterConfig\": {\n            \"logic\": \"AND\",\n            \"filters\": []\n        },\n        \"groupBy\": [\n            {\n                \"name\": \"Grouped by Country\",\n                \"fields\": [\"country\"]\n            }\n        ],\n        \"aggregations\": [\n            {\n                \"type\": \"count\",\n                \"field\": \"id\",\n                \"label\": \"Total Messages\"\n            },\n            {\n                \"type\": \"sum\",\n                \"field\": \"total_price\",\n                \"label\": \"Total Spend\"\n            }\n        ]\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{server}}/reports",
+					"host": [
+						"{{server}}"
+					],
+					"path": [
+						"reports"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "3) UPLOAD REPORT MANUALLY",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/Users/warodriguez/Documents/VONAGE/REPORTS/downloads/report_MESSAGES_cb28378f_20250410.csv"
+						},
+						{
+							"key": "includeRows",
+							"value": "\"false\"",
+							"type": "text"
+						},
+						{
+							"key": "includeMessages",
+							"value": "\"true\"",
+							"type": "text"
+						},
+						{
+							"key": "reportJob",
+							"value": "{\n        \"filterConfig\": {\n            \"logic\": \"AND\",\n            \"filters\": []\n        },\n        \"groupBy\": [\n            {\n                \"name\": \"Grouped by Country\",\n                \"fields\": [\"country\"]\n            }\n        ],\n        \"aggregations\": [\n            {\n                \"type\": \"count\",\n                \"field\": \"id\",\n                \"label\": \"Total Messages\"\n            },\n            {\n                \"type\": \"sum\",\n                \"field\": \"total_price\",\n                \"label\": \"Total Spend\"\n            }\n        ]\n    }",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{server}}/reports/upload",
+					"host": [
+						"{{server}}"
+					],
+					"path": [
+						"reports",
+						"upload"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "LIST CRONS",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{server}}/crons/list",
+					"host": [
+						"{{server}}"
+					],
+					"path": [
+						"crons",
+						"list"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "STOP CRON",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n            \"cron\": \"1 21 * * 1,2,3,4,5\",\n            \"startDate\": \"2025-04-01\",\n            \"endDate\": \"2025-04-07\",\n            \"email\": \"walter.rodriguez@vonage.com\"\n        }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{server}}/crons/cancel",
+					"host": [
+						"{{server}}"
+					],
+					"path": [
+						"crons",
+						"cancel"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "UPLOAD CUSTOMER CREDENTIALS",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"test\",\n    \"apiKey\": \"\",\n    \"apiSecret\": \"\",\n    \"accountId\": \"\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{server}}/customers/credentials",
+					"host": [
+						"{{server}}"
+					],
+					"path": [
+						"customers",
+						"credentials"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "server",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
