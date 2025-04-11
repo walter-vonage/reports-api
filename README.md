@@ -116,6 +116,61 @@ FilterConfig = {
 
 The following are all the operators for filtering. Let us know if you need any other.
 
+## Don't include rows if column country is empty
+This will filter out rows without any value in the column ```country```
+```
+{
+  field: "country",
+  type: "text",
+  operator: "exists"
+}
+```
+
+## Don't include rows if column country contains 'undefined'
+You can also filter out for some values you are interested in
+```
+{
+  field: "country",
+  type: "text",
+  operator: "regex",
+  value: "^(?!.*undefined)", // Negative lookahead
+  options: "i" // case-insensitive
+}
+```
+Or something like:
+```
+{
+  field: "country",
+  type: "text",
+  operator: "regex",
+  value: "^(?!undefined$).*",
+  options: "i"
+}
+```
+Combining both in one filtering:
+```
+{
+  logic: "AND",
+  filters: [
+    {
+      field: "country",
+      type: "text",
+      operator: "exists"
+    },
+    {
+      field: "country",
+      type: "text",
+      operator: "regex",
+      value: "^(?!undefined$).*",
+      options: "i"
+    }
+  ]
+}
+```
+This means:
+- Field exists (not empty)
+- Not equal to "undefined"
+
 ## Split
 Matches if the 2nd segment (index 1) of client_ref (split by '|') is exactly the word ```walter```
 ```
