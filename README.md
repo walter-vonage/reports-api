@@ -80,8 +80,11 @@ Let's see some examples of what you can send:
 ## These are for the resulting report
 
 ```emailTo```: Send this to receive a link to your final report.
+
 ```includeRows```: Respond ```true``` or ```false``` if you want to see or not the actual CSV data once the report is filtered and grouped.
+
 ```includeMessages```: Respond ```true``` or ```false``` if you want to see or not a JSON object of the resulting messages once the report is filtered and grouped.
+
 
 ## Repeat the process
 If you send this object, we will create a cron process which will be executed as specified in the parameters.
