@@ -59,14 +59,23 @@ Let's see some examples of what you can send:
 ## These are parameters defined in the Vonage Reports API
 
 ```apiKey```: The Api Key to use.
+
 ```apiSecret```: The Api Secret to use.
+
 ```accountId```: This can be the same master Api Key defined or any sub-key.
+
 ```startDate```: Starting date for download the data inside the report.
+
 ```endDate```: End date for download the data inside the report.
+
 ```product```: This is also what Vonage product you want to download data from.
+
 ```direction```: If this report will include inbound or outbound data.
+
 ```include_subaccounts```: If the accountId value is a master key, this parameter defines if sub-accounts must be included or not.
+
 ```include_messages```: This defines if you want to download the text of messages sent.
+
 
 ## These are for the resulting report
 
