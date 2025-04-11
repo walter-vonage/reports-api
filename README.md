@@ -374,8 +374,8 @@ This is a Typescript project. To be able to use it in Vonage's VCR, see below so
 ## Folder structure
 ```
 /src
-    - index.ts : Main starting file
-    - config.ts : Main basic configuration
+    index.ts : Main starting file
+    config.ts : Main basic configuration
     /work
         - Single files for single tasks
     /interface
