@@ -1,4 +1,3 @@
-import { sendReportEmail } from './emailService';
 import CsvRow from '../interface/csv_row';
 import GroupResult from '../interface/group_result';
 import GroupConfig from '../interface/group_config';

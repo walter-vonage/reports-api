@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { scheduledJobs } from '../constants/cron_scheduled_jobs';
+import { stopScheduledJobById } from './create_cron_from_json';
 
 /**
  * This endpoint will cancel a given Cron Jon
@@ -12,23 +13,17 @@ import { scheduledJobs } from '../constants/cron_scheduled_jobs';
  */
 export default async function CancelCron(req: Request, res: Response) {
     
-    const { startDate, endDate, email, cron } = req.body;
+    const { cronId } = req.body;
 
-    if (!startDate || !endDate || !cron) {
-        res.status(400).json({ message: 'Missing required fields: startDate, endDate, email, cron' });
+    if (!cronId) {
+        res.status(400).json({ message: 'Missing required field: cronId' });
         return;
     }
 
-    const key = `${cron}|${startDate}|${endDate}|${email || 'no-email'}`;
-
-    const task = scheduledJobs.get(key);
-    if (!task) {
-        res.status(404).json({ message: 'No cron job found with the given parameters' });
-        return;
+    if (stopScheduledJobById(cronId)) {
+        res.json({ message: 'Cron job cancelled successfully', cronId });
+    } else {
+        res.json({ message: 'Error trying to cancel Cron job', cronId });
     }
 
-    task.stop();
-    scheduledJobs.delete(key);
-
-    res.json({ message: 'Cron job cancelled successfully', key });
 }

@@ -5,14 +5,12 @@ import { createCronExpressionFromJson } from './create_cron_from_json';
 import CustomerSecret from '../interface/customer_secret';
 import ReportRequestModel from '../interface/report_request';
 import { Request, Response } from 'express';
-
-const CALLBACK_URL = 'https://webhook.site/your-callback-id'; // optional
+import { Config } from '../config';
 
 export default async function initiateDownloadReport(
     req: Request, 
     res: Response,
     CUSTOMER_SECRETS: Array<CustomerSecret>, 
-    REPORT_REQUESTS: Array<ReportRequestModel>,
     VONAGE_USERNAME: string,
     VONAGE_PASSWORD: string,
     ACCOUNT_ID: string,
@@ -29,35 +27,6 @@ export default async function initiateDownloadReport(
     checkForCron: boolean
 ): Promise<{ request_id: string; statusUrl: string; token: string }> {
     
-    const requestPayload = {
-        product,
-        account_id: ACCOUNT_ID,
-        direction,
-        date_start: `${startDate}T00:00:00+00:00`,
-        date_end: `${endDate}T00:00:00+00:00`,
-        include_subaccounts: include_subaccounts ? 'true' : 'false',
-        include_message: include_messages ? 'true' : 'false',
-        callback_url: CALLBACK_URL, // This is your public endpoint
-    };
-
-    const basicAuth = Buffer.from(`${VONAGE_USERNAME}:${VONAGE_PASSWORD}`).toString('base64');
-
-    const headers = {
-        'Authorization': `Basic ${basicAuth}`,
-        'Content-Type': 'application/json',
-    };    
-
-    console.log(requestPayload)
-
-    const response = await axios.post(
-        'https://api.nexmo.com/v2/reports', 
-        requestPayload, 
-        { headers }
-    );
-
-    console.log('Vonage reponse: ')
-    console.dir(response.data)
-
     const encriptedData = jwt.sign({ 
         VONAGE_USERNAME,
         VONAGE_PASSWORD,    
@@ -69,10 +38,35 @@ export default async function initiateDownloadReport(
         expiresIn: '5d',
     });
 
+    const requestPayload = {
+        product,
+        account_id: ACCOUNT_ID,
+        direction,
+        date_start: `${startDate}T00:00:00+00:00`,
+        date_end: `${endDate}T00:00:00+00:00`,
+        include_subaccounts: include_subaccounts ? 'true' : 'false',
+        include_message: include_messages ? 'true' : 'false',
+        callback_url: Config.SERVER_URL + '/reports/callback/' + encriptedData, // Vonage will tell me when the report is ready
+    };
+
+    const basicAuth = Buffer.from(`${VONAGE_USERNAME}:${VONAGE_PASSWORD}`).toString('base64');
+
+    const headers = {
+        'Authorization': `Basic ${basicAuth}`,
+        'Content-Type': 'application/json',
+    };    
+    const response = await axios.post(
+        'https://api.nexmo.com/v2/reports', 
+        requestPayload, 
+        { headers }
+    );
+
+    console.log('Vonage reponse: ')
+    console.dir(response.data)
+
     if (checkForCron) {
         createCronExpressionFromJson(
             CUSTOMER_SECRETS, 
-            REPORT_REQUESTS, 
             req, res)
     }
 

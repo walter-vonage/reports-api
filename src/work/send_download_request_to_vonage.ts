@@ -1,16 +1,14 @@
 import { Request, Response } from 'express';
-import { Config } from '../config';
 import initiateDownloadReport from './download_report';
-import ReportRequestModel from '../interface/report_request';
 import CustomerSecret from '../interface/customer_secret';
 
 /**
  * Provide the manual full configurations for the report 
  * in a JSON. Documentation available in the README file
  */
-export default async function SendDownloadRequestToVonage(CUSTOMER_SECRETS: Array<CustomerSecret>, REPORT_REQUESTS: Array<ReportRequestModel>, req: Request, res: Response) {
+export default async function SendDownloadRequestToVonage(CUSTOMER_SECRETS: Array<CustomerSecret>, req: Request, res: Response) {
     
-    const customerName = req.body.customerName || null;
+    const customerName = req.body.token || null;
     let   apiKey = req.body.apiKey || null;
     let   apiSecret = req.body.apiSecret || null;                               
     let   accountId = req.body.accountId || null;
@@ -26,7 +24,7 @@ export default async function SendDownloadRequestToVonage(CUSTOMER_SECRETS: Arra
     const reportJob = req.body.reportJob;
 
     if (!apiKey || !apiSecret || !accountId) {
-        const customerData = CUSTOMER_SECRETS.find((i:CustomerSecret) => i.name == customerName);
+        const customerData = CUSTOMER_SECRETS.find((i:CustomerSecret) => i.id == customerName);
         if (customerData && customerData.apiKey && customerData.apiSecret && customerData.accountId) {
             apiKey = customerData.apiKey;
             apiSecret = customerData.apiSecret;
@@ -44,7 +42,6 @@ export default async function SendDownloadRequestToVonage(CUSTOMER_SECRETS: Arra
         req, 
         res,
         CUSTOMER_SECRETS, 
-        REPORT_REQUESTS,
         apiKey, 
         apiSecret, 
         accountId, 
@@ -60,8 +57,6 @@ export default async function SendDownloadRequestToVonage(CUSTOMER_SECRETS: Arra
         reportJob,
         true,
     );
-
-    REPORT_REQUESTS.push( response )
 
     res.status(200).json(response)
 

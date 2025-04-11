@@ -34,10 +34,6 @@ export async function reportCallbackHandler(req: Request, res: Response) {
             { expiresIn: '5d' }
         );
 
-        console.log(`Report ready for request_id: ${request_id}`);
-        console.log(`Saved as: ${filename}`);
-        console.log(`JWT token: ${token}`);
-
         res.status(200).json({ success: true, token });
 
     } catch (err) {

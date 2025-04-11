@@ -13,7 +13,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"apiKey\": \"\",\n    \"apiSecret\": \"\",\n    \"accountId\": \"\",\n    \"startDate\": \"2025-04-01\",\n    \"endDate\": \"2025-04-02\",\n    \"product\": \"MESSAGES\",\n    \"direction\": \"outbound\",\n    \"include_subaccounts\": false,\n    \"include_messages\": false,\n    \"emailTo\": \"walter.rodriguez@vonage.com\",\n    \"includeRows\": false,\n    \"includeMessages\": true,\n    \"cron\": {\n        \"startAt\": \"16:20\",\n        \"mon\": false,\n        \"tue\": false,\n        \"wed\": false,\n        \"thu\": false,\n        \"fri\": false,\n        \"sat\": false,\n        \"sun\": false\n    },\n    \"reportJob\": {\n        \"filterConfig\": {\n            \"logic\": \"AND\",\n            \"filters\": []\n        },\n        \"groupBy\": [\n            {\n                \"name\": \"Grouped by Country\",\n                \"fields\": [\"country\"]\n            }\n        ],\n        \"aggregations\": [\n            {\n                \"type\": \"count\",\n                \"field\": \"id\",\n                \"label\": \"Total Messages\"\n            },\n            {\n                \"type\": \"sum\",\n                \"field\": \"total_price\",\n                \"label\": \"Total Spend\"\n            }\n        ]\n    }\n}",
+					"raw": "{\n    \"apiKey\": \"XXXXXX\",\n    \"apiSecret\": \"XXXXXX\",\n    \"accountId\": \"XXXXX\",\n    \"startDate\": \"2025-04-01\",\n    \"endDate\": \"2025-04-02\",\n    \"product\": \"MESSAGES\",\n    \"direction\": \"outbound\",\n    \"include_subaccounts\": false,\n    \"include_messages\": false,\n    \"emailTo\": \"your.email@vonage.com\",\n    \"includeRows\": false,\n    \"includeMessages\": true,\n    \"cron\": {\n        \"startAt\": \"14:51\",\n        \"getDataFromPrevious\": 15,\n        \"unit\": \"days\",\n        \"mon\": false,\n        \"tue\": false,\n        \"wed\": false,\n        \"thu\": false,\n        \"fri\": false,\n        \"sat\": false,\n        \"sun\": false\n    },\n    \"reportJob\": {\n        \"filterConfig\": {\n            \"logic\": \"AND\",\n            \"filters\": []\n        },\n        \"groupBy\": [\n            {\n                \"name\": \"Grouped by Country\",\n                \"fields\": [\"country\"]\n            }\n        ],\n        \"aggregations\": [\n            {\n                \"type\": \"count\",\n                \"field\": \"id\",\n                \"label\": \"Total Messages\"\n            },\n            {\n                \"type\": \"sum\",\n                \"field\": \"total_price\",\n                \"label\": \"Total Spend\"\n            }\n        ]\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -39,7 +39,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"customerName\": \"test\",\n    \"startDate\": \"2025-04-01\",\n    \"endDate\": \"2025-04-02\",\n    \"product\": \"MESSAGES\",\n    \"direction\": \"outbound\",\n    \"include_subaccounts\": false,\n    \"include_messages\": false,\n    \"emailTo\": \"walter.rodriguez@vonage.com\",\n    \"includeRows\": false,\n    \"includeMessages\": true,\n    \"cron\": {\n        \"startAt\": \"16:13\",\n        \"mon\": false,\n        \"tue\": false,\n        \"wed\": false,\n        \"thu\": false,\n        \"fri\": false,\n        \"sat\": false,\n        \"sun\": false\n    },\n    \"reportJob\": {\n        \"filterConfig\": {\n            \"logic\": \"AND\",\n            \"filters\": []\n        },\n        \"groupBy\": [\n            {\n                \"name\": \"Grouped by Country\",\n                \"fields\": [\"country\"]\n            }\n        ],\n        \"aggregations\": [\n            {\n                \"type\": \"count\",\n                \"field\": \"id\",\n                \"label\": \"Total Messages\"\n            },\n            {\n                \"type\": \"sum\",\n                \"field\": \"total_price\",\n                \"label\": \"Total Spend\"\n            }\n        ]\n    }\n}",
+					"raw": "{\n    \"token\": \"335112\",\n    \"startDate\": \"2025-04-01\",\n    \"endDate\": \"2025-04-30\",\n    \"product\": \"MESSAGES\",\n    \"direction\": \"outbound\",\n    \"include_subaccounts\": false,\n    \"include_messages\": false,\n    \"emailTo\": \"your.email@vonage.com\",\n    \"includeRows\": false,\n    \"includeMessages\": false,\n    \"cron\": {\n        \"startAt\": \"14:51\",\n        \"getDataFromPrevious\": 15,\n        \"unit\": \"days\",\n        \"mon\": false,\n        \"tue\": false,\n        \"wed\": false,\n        \"thu\": false,\n        \"fri\": false,\n        \"sat\": false,\n        \"sun\": false\n    },\n    \"reportJob\": {\n        \"filterConfig\": {\n            \"logic\": \"AND\",\n            \"filters\": [{\n                \"field\": \"country\",\n                \"type\": \"text\",\n                \"operator\": \"regex\",\n                \"value\": \"^(?!$).*\",\n                \"options\": \"i\" // optional: case-insensitive\n            }]\n        },\n        \"groupBy\": [\n            {\n                \"name\": \"Grouped by Country and Status\",\n                \"fields\": [\"country\", \"status\"]\n            }\n        ],\n        \"aggregations\": [\n            {\n                \"type\": \"count\",\n                \"field\": \"id\",\n                \"label\": \"Total Messages\"\n            },\n            {\n                \"type\": \"sum\",\n                \"field\": \"total_price\",\n                \"label\": \"Total Spend\"\n            }\n        ]\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -126,7 +126,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n            \"cron\": \"1 21 * * 1,2,3,4,5\",\n            \"startDate\": \"2025-04-01\",\n            \"endDate\": \"2025-04-07\",\n            \"email\": \"walter.rodriguez@vonage.com\"\n        }",
+					"raw": "{\n    \"cronId\": \"406420\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -153,7 +153,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"name\": \"test\",\n    \"apiKey\": \"\",\n    \"apiSecret\": \"\",\n    \"accountId\": \"\"\n}",
+					"raw": "{\n    \"name\": \"test\",\n    \"apiKey\": \"XXXXXX\",\n    \"apiSecret\": \"XXXXXXX\",\n    \"accountId\": \"XXXXXXXX\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -199,7 +199,7 @@
 	"variable": [
 		{
 			"key": "server",
-			"value": "",
+			"value": "https://neru-74c96a88-reports-api-prod.euw1.runtime.vonage.cloud",
 			"type": "string"
 		}
 	]

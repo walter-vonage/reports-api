@@ -41,17 +41,16 @@ export default async function ProcessUploadedDataFromUser(req: Request, res: Res
 
     //  3) Process the filters
     const filteredRows = filterDataRows(content, filterToUse);
-    console.log('filteredRows to process')
-    console.dir(filteredRows)
 
     //  4) Group the report based on the content of "reportJob"
-    const reportResult: { success: boolean; groupResults: any[] } = await runReportJob(reportJob, filteredRows, includeMessages);
+    const reportResult: { success: boolean; groupResults: any[] } = await runReportJob(
+        reportJob, 
+        filteredRows, 
+        includeMessages
+    );
 
-    //  5) Check if the user wants to start a Cron Job
+    //  5) No cron jobs from here
     const cronJson = req.body.cron ? JSON.parse(req.body.cron) : null;
-    if (cronJson) {
-        // createCronExpressionFromJson(reportJob, filterToUse, cronJson, includeMessages);
-    }
 
     //  6) Generate the HTML
     const htmlContent = generateHtmlReport(reportResult.groupResults);

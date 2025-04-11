@@ -2,9 +2,7 @@ import express, { Request, Response } from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
-import ReportRequestModel from './interface/report_request';
 import SendDownloadRequestToVonage from './work/send_download_request_to_vonage';
-import CheckPeriodicallyForDownloadedReports from './work/check_periodically_for_downloaded_reports';
 import DownloadProcessedCSV from './work/download_processed_csv';
 import ProcessUploadedDataFromUser from './work/process_uploaded_data_from_user';
 import CancelCron from './work/cancel_cron';
@@ -12,14 +10,12 @@ import ListCrons from './work/list_crons';
 import CustomerSecret from './interface/customer_secret';
 import StoreCustomerCredentials from './work/store_customer_credentials';
 import { Config } from './config';
+import VonageTellsUsReportIsReady from './work/vonage_tells_us_report_is_ready';
+import RunThisEveryMinute from './work/run_this_every_minute';
+import { callCronCheckAgain } from './work/utils';
 const app = express();
 app.use(express.json());
 const port = process.env.VCR_PORT || 3000;
-
-/**
- * Memory DB - All reports requested
- */
-const REPORT_REQUESTS: Array<ReportRequestModel> = []
 
 /**
  * Memory DB - All customer secrets preloaded
@@ -39,7 +35,7 @@ if (!fs.existsSync(uploadDir)) {
  */
 const downloadsDir = path.resolve(__dirname, 'downloads');
 if (!fs.existsSync(downloadsDir)) {
-  fs.mkdirSync(downloadsDir);
+    fs.mkdirSync(downloadsDir);
 }
 
 /**
@@ -53,15 +49,32 @@ const upload = multer({
 });
 
 app.post('/reports', async (req: Request, res: Response) => {
-    await SendDownloadRequestToVonage(CUSTOMER_SECRETS, REPORT_REQUESTS, req, res);
+    console.log('USER IS ASKING FOR A REPORT');
+    await SendDownloadRequestToVonage(CUSTOMER_SECRETS, req, res);
+})
+
+app.post('/reports/callback/:token', async (req: Request, res: Response) => {
+    console.log('VONAGE SAYS REPORT IS READY');
+    await VonageTellsUsReportIsReady(req, res);
 })
 
 app.get('/reports/:token', async (req: Request, res: Response) => {
+    console.log('USER CLICKS THE LINK FROM THE RECEIVED EMAIL');
     await DownloadProcessedCSV(req, res);
 })
 
-app.post('/reports/upload', upload.single('file'), async (req: Request, res: Response) => {    
-    ProcessUploadedDataFromUser(req, res);    
+app.post('/reports/upload', upload.single('file'), async (req: Request, res: Response) => {
+    console.log('USER WANTS TO PROCESS A CSV FILE');
+    ProcessUploadedDataFromUser(req, res);
+})
+
+app.get('/cron-runner', async (req: Request, res: Response) => {
+    //  We run this every minute
+    await RunThisEveryMinute(CUSTOMER_SECRETS);    
+    // We call ourselves again in a minute
+    callCronCheckAgain()
+    //  Return
+    res.json({ success: true, message: 'Checked and triggered eligible cron jobs' });
 })
 
 app.get('/crons/list', (req: Request, res: Response) => {
@@ -75,8 +88,6 @@ app.post('/crons/cancel', (req: Request, res: Response) => {
 app.post('/customers/credentials', (req: Request, res: Response) => {
     StoreCustomerCredentials(CUSTOMER_SECRETS, req, res);
 });
-
-CheckPeriodicallyForDownloadedReports(REPORT_REQUESTS);
 
 
 /**
@@ -99,4 +110,5 @@ app.get('/_/metrics', async (req: Request, res: Response) => {
 app.listen(port, () => {
     console.log(`Server running on PORT ${port}`);
     console.log('This url: ' + Config.SERVER_URL)
+    callCronCheckAgain();
 });

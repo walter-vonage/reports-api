@@ -1,21 +1,13 @@
 import { Request, Response } from 'express';
-import { scheduledJobs } from '../constants/cron_scheduled_jobs';
+import { listScheduledJobs } from "./create_cron_from_json";
 
 /**
  * List all the Cron Jobs added
  */
 export default async function ListCrons(req: Request, res: Response) {
-    const jobs = Array.from(scheduledJobs.keys()).map(key => {
-        const [expr, startDate, endDate, email] = key.split('|');
-        return {
-            cron: expr,
-            startDate,
-            endDate,
-            email
-        };
-    });
+    const jobs = listScheduledJobs()
     res.json({
-        total: jobs.length,
+        count: jobs.length,
         jobs
-    });
+    })
 }
