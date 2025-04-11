@@ -20,7 +20,9 @@ Let's see some examples of what you can send:
     "includeRows": false,
     "includeMessages": true,
     "cron": {
-        "startAt": "16:20",
+        "startAt": "14:51",
+        "getDataFromPrevious": 15,
+        "unit": "days",
         "mon": false,
         "tue": false,
         "wed": false,
@@ -28,7 +30,7 @@ Let's see some examples of what you can send:
         "fri": false,
         "sat": false,
         "sun": false
-    },
+    }
     "reportJob": {
         "filterConfig": {
             "logic": "AND",
@@ -90,16 +92,28 @@ Let's see some examples of what you can send:
 If you send this object, we will create a cron process which will be executed as specified in the parameters.
 ```
 "cron": {
-        "startAt": "16:20",
-        "mon": false,
-        "tue": false,
-        "wed": false,
-        "thu": false,
-        "fri": false,
-        "sat": false,
-        "sun": false
-    },
+    "startAt": "14:51",
+    "getDataFromPrevious": 15,
+    "unit": "days",
+    "mon": false,
+    "tue": false,
+    "wed": false,
+    "thu": false,
+    "fri": false,
+    "sat": false,
+    "sun": false
+}
 ```
+Where:
+```startAt``` is the time the report will run again. IMPORTANT: THE FORMAT MUST BE 24-HOURS AND THE SERVER RUNS IN UTC (WITHOUT SUMMER TIME CHANGE)
+
+```getDataFromPrevious``` this is the amount of days or hours we will grab to generate the report. Starting for the current date and time.
+
+```unit``` this can be either ```days``` or ```hours``` 
+
+Set to ```true``` or ```false``` for the days you want the report to run.
+
+
 # ReportJob
 This last object is the one used to define the filtering and the grouping of the data.
 
@@ -343,7 +357,9 @@ Send a ```POST``` request to ```/reports``` - This is an example of a JSON body:
     "includeRows": false,
     "includeMessages": true,
     "cron": {
-        "startAt": "16:20",
+        "startAt": "14:51",
+        "getDataFromPrevious": 15,
+        "unit": "days",
         "mon": false,
         "tue": false,
         "wed": false,
@@ -351,7 +367,7 @@ Send a ```POST``` request to ```/reports``` - This is an example of a JSON body:
         "fri": false,
         "sat": false,
         "sun": false
-    },
+    }
     "reportJob": {
         "filterConfig": {
             "logic": "AND",
@@ -418,18 +434,35 @@ If you already have a downloaded Vonage Reports API and want to proceed with the
 
 ## List Cron Jobs
 To know what cron jobs are running, send a GET request to ```/crons/list``` 
-
-## Stop Cron Job
-To stop a current running cron job, send a POST request to ```/crons/cancel``` with the resulting information from the previous GET query. Example:
+You will get a list of current running jobs, like this:
 ```
 {
-    "cron": "1 21 * * 1,2,3,4,5",
-    "startDate": "2025-04-01",
-    "endDate": "2025-04-07",
-    "email": "my.email@vonage.com"
+    "count": 1,
+    "jobs": [
+        {
+            "startAt": "14:51",
+            "getDataFromPrevious": 15,
+            "unit": "days",
+            "mon": false,
+            "tue": false,
+            "wed": false,
+            "thu": false,
+            "fri": true,
+            "sat": false,
+            "sun": false,
+            "id": "490219"
+        }
+    ]
 }
 ```
 
+## Stop Cron Job
+To stop a current running cron job, send a POST request to ```/crons/cancel``` with any of the IDs. For example:
+```
+{
+    "cronId": "214615"
+}
+```
 
 # For Developers
 If you are planning to change this code or improve it, here are some considerations.
