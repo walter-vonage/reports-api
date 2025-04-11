@@ -11,6 +11,7 @@ import CancelCron from './work/cancel_cron';
 import ListCrons from './work/list_crons';
 import CustomerSecret from './interface/customer_secret';
 import StoreCustomerCredentials from './work/store_customer_credentials';
+import { Config } from './config';
 const app = express();
 app.use(express.json());
 const port = process.env.VCR_PORT || 3000;
@@ -24,7 +25,6 @@ const REPORT_REQUESTS: Array<ReportRequestModel> = []
  * Memory DB - All customer secrets preloaded
  */
 const CUSTOMER_SECRETS: Array<CustomerSecret> = [];
-
 
 /**
  * Ensure uploads directory exists
@@ -79,7 +79,6 @@ app.post('/customers/credentials', (req: Request, res: Response) => {
 CheckPeriodicallyForDownloadedReports(REPORT_REQUESTS);
 
 
-
 /**
  * Check system health 
  */
@@ -98,5 +97,6 @@ app.get('/_/metrics', async (req: Request, res: Response) => {
  * Listen
  */
 app.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}`);
+    console.log(`Server running on PORT ${port}`);
+    console.log('This url: ' + Config.SERVER_URL)
 });

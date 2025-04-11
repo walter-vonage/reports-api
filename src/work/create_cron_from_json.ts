@@ -43,6 +43,9 @@ export function createCronExpressionFromJson(CUSTOMER_SECRETS: Array<CustomerSec
     }
 
     const cronExpr = getCronExpressionFromJson(cron);
+    if (!cronExpr) {
+        return false
+    }
 
     // Create a unique key for this job
     const key = `${cronExpr}|${startDate}|${endDate}|${emailTo || 'no-email'}`;
@@ -110,7 +113,7 @@ export function createCronExpressionFromJson(CUSTOMER_SECRETS: Array<CustomerSec
     }
     And converts to something like: 30 8 * * 1,2,3,4,5
  */
-function getCronExpressionFromJson(schedule: CronSchedule): string {
+function getCronExpressionFromJson(schedule: CronSchedule): string | null {
     const [hour, minute] = schedule.startAt.split(':').map(Number);
 
     const days: Record<'sun' | 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat', number> = {
@@ -128,7 +131,8 @@ function getCronExpressionFromJson(schedule: CronSchedule): string {
         .map(([key]) => days[key as keyof typeof days]);
 
     if (activeDays.length === 0) {
-        throw new Error('No days selected for cron schedule');
+        console.log('No days selected for cron schedule');
+        return null;
     }
 
     return `${minute} ${hour} * * ${activeDays.join(',')}`;

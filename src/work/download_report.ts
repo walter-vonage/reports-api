@@ -35,8 +35,8 @@ export default async function initiateDownloadReport(
         direction,
         date_start: `${startDate}T00:00:00+00:00`,
         date_end: `${endDate}T00:00:00+00:00`,
-        include_subaccounts,
-        include_messages,
+        include_subaccounts: include_subaccounts ? 'true' : 'false',
+        include_message: include_messages ? 'true' : 'false',
         callback_url: CALLBACK_URL, // This is your public endpoint
     };
 
@@ -48,7 +48,6 @@ export default async function initiateDownloadReport(
     };    
 
     console.log(requestPayload)
-    console.log(headers)
 
     const response = await axios.post(
         'https://api.nexmo.com/v2/reports', 
