@@ -372,6 +372,7 @@ If you are planning to change this code or improve it, here are some considerati
 This is a Typescript project. To be able to use it in Vonage's VCR, see below some minor considerations.
 
 ## Folder structure
+```
 /src
     - index.ts : Main starting file
     - config.ts : Main basic configuration
@@ -385,6 +386,7 @@ This is a Typescript project. To be able to use it in Vonage's VCR, see below so
 /package.json
 /dist
     - All the files converted from Typescript to Javascript
+```
 
 ## Run locally
 You just need to have Typescript installed (tsc)
