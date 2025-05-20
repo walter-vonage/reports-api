@@ -17,8 +17,6 @@ Let's see some examples of what you can send:
     "include_subaccounts": false,
     "include_messages": false,
     "emailTo": "my.email@vonage.com",
-    "includeRows": false,
-    "includeMessages": true,
     "cron": {
         "startAt": "14:51",
         "getDataFromPrevious": 15,
@@ -82,11 +80,6 @@ Let's see some examples of what you can send:
 ## These are for the resulting report
 
 ```emailTo```: Send this to receive a link to your final report.
-
-```includeRows```: Respond ```true``` or ```false``` if you want to see or not the actual CSV data once the report is filtered and grouped.
-
-```includeMessages```: Respond ```true``` or ```false``` if you want to see or not a JSON object of the resulting messages once the report is filtered and grouped.
-
 
 ## Repeat the process
 If you send this object, we will create a cron process which will be executed as specified in the parameters.
@@ -354,8 +347,6 @@ Send a ```POST``` request to ```/reports``` - This is an example of a JSON body:
     "include_subaccounts": false,
     "include_messages": false,
     "emailTo": "my.email@vonage.com",
-    "includeRows": false,
-    "includeMessages": true,
     "cron": {
         "startAt": "14:51",
         "getDataFromPrevious": 15,
@@ -424,10 +415,6 @@ Once you do that, you can then simply make the call by ```name```
 If you already have a downloaded Vonage Reports API and want to proceed with the filtering and/or grouping, then send a POST request to ```reports/upload``` and send ```form-data``` key:value pairs.
 
 ```file```: The CSV file to be processed. Currently we support up to 1 GB of data.
-
-```includeRows```: ```"true"``` or ```"false"```
-
-```includeMessages```: ```"true"``` or ```"false"```
 
 ```reportJob```: [send the full reportJob object as mentioned before. Send it as text]
 

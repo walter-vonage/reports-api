@@ -16,8 +16,6 @@ import jwt from 'jsonwebtoken';
 export default async function ProcessUploadedDataFromUser(req: Request, res: Response) {
     
     const file = req.file;
-    const includeRows = req.body.includeRows;
-    const includeMessages = req.body.includeMessages;
     const reportJob: ReportJob = req.body.reportJob ? JSON.parse( req.body.reportJob ) : null;
 
     //  Validate
@@ -46,14 +44,22 @@ export default async function ProcessUploadedDataFromUser(req: Request, res: Res
     const reportResult: { success: boolean; groupResults: any[] } = await runReportJob(
         reportJob, 
         filteredRows, 
-        includeMessages
     );
 
     //  5) No cron jobs from here
     const cronJson = req.body.cron ? JSON.parse(req.body.cron) : null;
 
     //  6) Generate the HTML
-    const htmlContent = generateHtmlReport(reportResult.groupResults);
+    //  Since we are coming from an uploaded file, some data is not obtained)
+    const htmlContent = generateHtmlReport(
+        reportResult.groupResults,
+        '',
+        '',
+        'SMS',
+        false,
+        false,
+        'outbound'
+    );
     
     // 7) Save the HTML version to a file
     const DOWNLOAD_FOLDER = path.resolve(__dirname, '../downloads');
@@ -72,7 +78,6 @@ export default async function ProcessUploadedDataFromUser(req: Request, res: Res
     res.json({
         success: true,
         count: filteredRows.length,
-        ...(includeRows && { rows: filteredRows }), // <- conditionally include "rows" which is the content of the CSV in the response
         reportResult,
         htmlPage: `${Config.SERVER_URL}/reports/${token}`
     })

@@ -63,8 +63,6 @@ export default async function RunThisEveryMinute(
                 req.body.include_messages,
                 req.body.direction || 'outbound',
                 req.body.emailTo,
-                req.body.includeRows,
-                req.body.includeMessages,
                 req.body.reportJob,
                 false
             );

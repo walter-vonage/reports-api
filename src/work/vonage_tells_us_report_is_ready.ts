@@ -39,9 +39,15 @@ export default async function VonageTellsUsReportIsReady(
         VONAGE_USERNAME: string,
         VONAGE_PASSWORD: string,
         emailTo?: string;
-        includeRows: boolean;
-        includeMessages: boolean;
         reportJob: ReportJob;
+        //  New fields
+        ACCOUNT_ID: string;
+        startDate: string;
+        endDate: string;
+        product: 'SMS' | 'MESSAGES';
+        include_subaccounts: boolean;
+        include_messages: boolean;
+        direction: 'outbound' | 'inbound';
     };
 
     if (!decoded.reportJob) {
@@ -109,12 +115,23 @@ export default async function VonageTellsUsReportIsReady(
         }
         
         //  4) Group the report based on the content of "reportJob"
-        const reportResult: { success: boolean; groupResults: any[] } = await runReportJob(decoded.reportJob, filteredRows, decoded.includeMessages);
+        const reportResult: { success: boolean; groupResults: any[] } = await runReportJob(
+            decoded.reportJob, 
+            filteredRows, 
+        );
 
         //  5) Check if the user wants to start a Cron Job
 
         //  6) Generate the HTML
-        const htmlContent = generateHtmlReport(reportResult.groupResults);
+        const htmlContent = generateHtmlReport(
+            reportResult.groupResults,
+            decoded.startDate,
+            decoded.endDate,
+            decoded.product,
+            decoded.include_subaccounts,
+            decoded.include_messages,
+            decoded.direction,
+        );
 
         // 7) Save the HTML version to a file
         const htmlFilename = `report_${Date.now()}.html`;
@@ -136,6 +153,9 @@ export default async function VonageTellsUsReportIsReady(
                 : `Grouped by ${(groupBy as string[]).join(', ') || 'Unknown'}`;
             const html = generateEmailBody({
                 accountId,
+                startDate: decoded.startDate,
+                endDate: decoded.endDate,
+                downloadCSVUrl: extractedCsvFile.entryName,
                 direction,
                 reportName: groupLabel,
                 downloadUrl: `${Config.SERVER_URL}/reports/${token}`

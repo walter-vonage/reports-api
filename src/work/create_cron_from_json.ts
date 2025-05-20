@@ -43,24 +43,29 @@ export function createCronExpressionFromJson(
         return false;
     }
 
-    const { hour, minute, days } = parseCronSchedule(cron);
-    if (!days.length) {
-        console.warn('No valid days specified for schedule');
+    try {
+        const { hour, minute, days } = parseCronSchedule(cron);
+        if (!days.length) {
+            console.warn('No valid days specified for schedule');
+            return false;
+        }
+    
+        console.log(`Scheduling report job [ID: ${cronId}] at ${hour}:${minute} on days [${days.join(',')}]`);
+    
+        scheduledJobs.set(cronId, {
+            meta: {
+                ...cron,
+                id: cronId,
+            },
+            req,
+            res
+        })
+    
+        return true
+        
+    } catch(ex: any) {
         return false;
     }
-
-    console.log(`Scheduling report job [ID: ${cronId}] at ${hour}:${minute} on days [${days.join(',')}]`);
-
-    scheduledJobs.set(cronId, {
-        meta: {
-            ...cron,
-            id: cronId,
-        },
-        req,
-        res
-    })
-
-    return true
 }
 
 export function stopScheduledJobById(cronId: string): boolean {

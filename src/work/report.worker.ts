@@ -11,7 +11,6 @@ import generateHtmlReport from './generate_report';
 export async function runReportJob(
     reportJob: ReportJob,
     filteredRows: CsvRow[],
-    includeMessages: boolean
 ): Promise<{ success: boolean; groupResults: any[] }> {
 
     // Extract report configuration from job
@@ -30,13 +29,17 @@ export async function runReportJob(
             filterConfig,
             groupBy as GroupConfig[],
             aggregations,
-            includeMessages
         );
         groupResults.push({ name: 'Grouped Report', groupBy: (groupBy as GroupConfig[]).flatMap(g => g.fields), result });
     } else {
         // If groupBy is just an array of strings like ["status", "country_name"]
         const fields = groupBy as string[];
-        const result = filterAndGroupReport(filteredRows, filterConfig, fields, aggregations, includeMessages);
+        const result = filterAndGroupReport(
+            filteredRows, 
+            filterConfig, 
+            fields, 
+            aggregations, 
+        );
         groupResults.push({ name: `Grouped by ${fields.join(', ')}`, groupBy: fields, result });
     }
 

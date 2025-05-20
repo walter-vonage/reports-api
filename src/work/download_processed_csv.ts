@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import path from 'path';
 import fs from 'fs';
 
 /**

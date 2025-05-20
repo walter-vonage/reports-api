@@ -1,4 +1,5 @@
 export const Config = {
+    VERSION: '0.0.1',
     EMAIL_SUBJECT: 'Your Vonage report is now ready',
     EMAIL_USER: 'warodri@gmail.com',
     EMAIL_PASS: 'hhfp dvnq ozmp nawh',

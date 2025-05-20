@@ -10,7 +10,6 @@ export default function filterAndGroupReport(
     filterConfig: FilterConfig,
     groupBy: GroupConfig[] | string[] = [],
     aggregations: Aggregation[] = [],
-    includeMessages: boolean // If include "messages" or not
 ): GroupResult[] {
 
     const filtered = filterDataRows(rows, filterConfig);
@@ -70,16 +69,6 @@ export default function filterAndGroupReport(
             group,
             count: messages.length,
             aggregations: aggregationResults,
-            ...(includeMessages && {
-                messages: messages.map(m => ({
-                    date: m.date_received,
-                    to: m.to,
-                    status: m.status,
-                    price: m.total_price,
-                    client_ref: m.client_ref,
-                    error: m.error_code_description
-                }))
-            })
         };
     });
 

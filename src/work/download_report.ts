@@ -3,7 +3,6 @@ import jwt from 'jsonwebtoken';
 import ReportJob from '../interface/rport_job';
 import { createCronExpressionFromJson } from './create_cron_from_json';
 import CustomerSecret from '../interface/customer_secret';
-import ReportRequestModel from '../interface/report_request';
 import { Request, Response } from 'express';
 import { Config } from '../config';
 
@@ -21,8 +20,6 @@ export default async function initiateDownloadReport(
     include_messages: boolean,
     direction: 'outbound' | 'inbound',
     emailTo: string | undefined,
-    includeRows: boolean,
-    includeMessages: boolean,
     reportJob: ReportJob,
     checkForCron: boolean
 ): Promise<{ request_id: string; statusUrl: string; token: string }> {
@@ -31,9 +28,15 @@ export default async function initiateDownloadReport(
         VONAGE_USERNAME,
         VONAGE_PASSWORD,    
         emailTo,
-        includeRows,
-        includeMessages,
-        reportJob
+        reportJob,
+        //  New fields
+        ACCOUNT_ID,
+        startDate,
+        endDate,
+        product,
+        include_subaccounts,
+        include_messages,
+        direction,
      }, process.env.JWT_SECRET || 'secret123', {
         expiresIn: '5d',
     });
@@ -43,7 +46,7 @@ export default async function initiateDownloadReport(
         account_id: ACCOUNT_ID,
         direction,
         date_start: `${startDate}T00:00:00+00:00`,
-        date_end: `${endDate}T00:00:00+00:00`,
+        date_end: `${endDate}T23:59:59+00:00`,
         include_subaccounts: include_subaccounts ? 'true' : 'false',
         include_message: include_messages ? 'true' : 'false',
         callback_url: Config.SERVER_URL + '/reports/callback/' + encriptedData, // Vonage will tell me when the report is ready

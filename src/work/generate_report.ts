@@ -1,6 +1,17 @@
 import GroupResult from "../interface/group_result";
 
-export default function generateHtmlReportPivot(groupSets: { name: string; result: GroupResult[] }[]): string {
+export default function generateHtmlReportPivot(
+    groupSets: { name: string; result: GroupResult[] }[],
+    startDate: string,
+    endDate: string,
+    product: 'SMS' | 'MESSAGES',
+    include_subaccounts: boolean,
+    include_messages: boolean,
+    direction: 'outbound' | 'inbound',
+): string {
+
+    const useBlueBars = false;
+
     let html = `
     <html>
     <head>
@@ -19,29 +30,79 @@ export default function generateHtmlReportPivot(groupSets: { name: string; resul
     </head>
     <body>
     <div class="container">
-    <h1>Reports API Summary</h1>`;
+
+    <h1>Reports API Summary</h1>
+    
+    <div class="border rounded-4 pt-3 pb-3">
+        <table class="table">
+            <tr>
+                <td>Start date:</td>
+                <td>${startDate}</td>
+            </tr>
+            <tr>
+                <td>End date:</td>
+                <td>${endDate}</td>
+            </tr>
+            <tr>
+                <td>
+                    Product:
+                </td>
+                <td>
+                    ${product}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Include Subaccounts:
+                </td>
+                <td>
+                    ${include_subaccounts ? 'Yes' : 'No'}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Include Messages:
+                </td>
+                <td>
+                    ${include_messages ? 'Yes' : 'No'}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Direction:
+                </td>
+                <td>
+                    ${direction}
+                </td>
+            </tr>
+        </table>
+    </div>
+    `;
 
     for (const section of groupSets) {
-        html += `<h2>${section.name}</h2>`;
-
-        // 1. Bar chart summary
-        const summaryBars: { label: string; value: number }[] = section.result.map(gr => {
-            const label = Object.values(gr.group).join(" / ");
-            const count = gr.count || 0;
-            return { label, value: count };
-        });
-
-        const maxValue = Math.max(...summaryBars.map(b => b.value));
-        html += `<div style="margin-bottom: 20px;">`;
-        for (const bar of summaryBars) {
-            const width = ((bar.value / maxValue) * 100).toFixed(1);
-            html += `
-                <div style="margin-bottom: 6px;">
-                    <div><strong>${bar.label}</strong> (${bar.value})</div>
-                    <div class="bar-container"><div class="bar" style="width:${width}%"></div></div>
-                </div>`;
+        
+        if (useBlueBars) {
+            html += `<h2>${section.name}</h2>`;
+    
+            // 1. Bar chart summary
+            const summaryBars: { label: string; value: number }[] = section.result.map(gr => {
+                const label = Object.values(gr.group).join(" / ");
+                const count = gr.count || 0;
+                return { label, value: count };
+            });
+    
+            const maxValue = Math.max(...summaryBars.map(b => b.value));
+            html += `<div style="margin-bottom: 20px;">`;
+            for (const bar of summaryBars) {
+                const width = ((bar.value / maxValue) * 100).toFixed(1);
+                html += `
+                    <div style="margin-bottom: 6px;">
+                        <div><strong>${bar.label}</strong> (${bar.value})</div>
+                        <div class="bar-container"><div class="bar" style="width:${width}%"></div></div>
+                    </div>`;
+            }
+            html += `</div>`;
         }
-        html += `</div>`;
 
         // 2. Pivot table
         const allAggs = new Set<string>();

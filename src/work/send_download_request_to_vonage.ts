@@ -19,8 +19,6 @@ export default async function SendDownloadRequestToVonage(CUSTOMER_SECRETS: Arra
     const include_subaccounts = req.body.include_subaccounts;           
     const include_messages = req.body.include_messages;           
     const emailTo = req.body.emailTo;                                   
-    const includeRows = req.body.includeRows;
-    const includeMessages = req.body.includeMessages;
     const reportJob = req.body.reportJob;
 
     if (!apiKey || !apiSecret || !accountId) {
@@ -52,8 +50,6 @@ export default async function SendDownloadRequestToVonage(CUSTOMER_SECRETS: Arra
         include_messages,
         direction,
         emailTo,
-        includeRows,
-        includeMessages,
         reportJob,
         true,
     );

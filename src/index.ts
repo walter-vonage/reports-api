@@ -30,6 +30,14 @@ if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir);
 }
 
+// Serve static files from the "public" folder
+const publicPath = path.join(__dirname, 'public');
+if (!fs.existsSync(publicPath)) {
+    fs.mkdirSync(publicPath);
+}
+app.use(express.static(publicPath));
+
+
 /**
  * Ensure downloads directory exists
  */
@@ -47,6 +55,10 @@ const upload = multer({
         fileSize: 5 * 1024 * 1024 * 1024, // 1GB in bytes
     },
 });
+
+/**
+ * REPORTS ENDPOINTS
+ */
 
 app.post('/reports', async (req: Request, res: Response) => {
     console.log('USER IS ASKING FOR A REPORT');
@@ -68,9 +80,13 @@ app.post('/reports/upload', upload.single('file'), async (req: Request, res: Res
     ProcessUploadedDataFromUser(req, res);
 })
 
+/**
+ * CRON ENDPOINTS
+ */
+
 app.get('/cron-runner', async (req: Request, res: Response) => {
     //  We run this every minute
-    await RunThisEveryMinute(CUSTOMER_SECRETS);    
+    await RunThisEveryMinute(CUSTOMER_SECRETS);
     // We call ourselves again in a minute
     callCronCheckAgain()
     //  Return
@@ -88,6 +104,35 @@ app.post('/crons/cancel', (req: Request, res: Response) => {
 app.post('/customers/credentials', (req: Request, res: Response) => {
     StoreCustomerCredentials(CUSTOMER_SECRETS, req, res);
 });
+
+/**
+ * PUBLIC GET ENDPOINTS
+ */
+
+app.get('/csv/:filename', (req: Request, res: Response) => {
+    const DOWNLOAD_FOLDER = path.resolve(__dirname, 'downloads');
+    const filename = req.params.filename;
+
+    // Security: prevent path traversal attacks
+    if (filename.includes('/') || filename.includes('..')) {
+        res.status(400).send('Invalid filename');
+        return;
+    }
+
+    const filePath = path.join(DOWNLOAD_FOLDER, filename);
+
+    // Check if file exists
+    fs.access(filePath, fs.constants.F_OK, (err) => {
+        if (err) {
+            res.status(404).send('File not found');
+            return;
+        }
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        res.sendFile(filePath);
+    });
+})
+
 
 
 /**
