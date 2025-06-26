@@ -1,4 +1,5 @@
 import GroupResult from "../interface/group_result";
+import { Config } from "../config";
 
 export default function generateHtmlReportPivot(
     groupSets: { name: string; result: GroupResult[] }[],
@@ -10,13 +11,16 @@ export default function generateHtmlReportPivot(
     direction: 'outbound' | 'inbound',
 ): string {
 
+    const VERSION = Config.VERSION;
+    const SERVER_URL = Config.SERVER_URL;
+
     const useBlueBars = false;
 
     /**
      * Formats any possible JSON content inside any field
      */
     const formatCellValue = (val: string) => {
-        
+
         if (typeof val == 'string') {
             if (!val || val.toLowerCase() === 'undefined') return '';
         }
@@ -38,39 +42,13 @@ export default function generateHtmlReportPivot(
     let html = `
     <html>
     <head>
-      <style>
-        body { font-family: Arial, sans-serif; background-color: #f8f9fa; }
-        .container { max-width: 960px; margin: auto; background: white; padding: 20px; border-radius: 8px; }
-        table { border-collapse: collapse; width: 100%; margin-bottom: 30px; }
-        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-        th { background-color: #f4f4f4; }
-        .indent-1 { padding-left: 20px; }
-        .indent-2 { padding-left: 40px; }
-        .bold { font-weight: bold; background-color: #f9f9f9; }
-        .bar-container { height: 20px; background: #e9ecef; border-radius: 4px; overflow: hidden; }
-        .bar { height: 100%; background: #007bff; }
-        .totals { background-color: #dfefff; }
-        .json-cell {
-            background: #f0f8ff;
-            padding: 4px;
-            border: 1px dashed #007bff;
-            border-radius: 4px;
-            font-size: 90%;
-            margin-bottom: 2px;
-        }
-        .json-cell div {
-            margin-bottom: 2px;
-        }
-        .json-rest {
-            font-size: 90%;
-            color: #555;
-        }
-      </style>
+          <link rel="stylesheet" href="${SERVER_URL}/report.css">
     </head>
     <body>
     <div class="container">
 
     <h1>Reports API Summary</h1>
+    Version: ${VERSION}
     
     <div class="border rounded-4 pt-3 pb-3">
         <table class="table">
@@ -121,7 +99,6 @@ export default function generateHtmlReportPivot(
     for (const section of groupSets) {
 
         if (useBlueBars) {
-            html += `<h2>${section.name}</h2>`;
 
             // 1. Bar chart summary
             const summaryBars: { label: string; value: number }[] = section.result.map(gr => {
@@ -155,11 +132,24 @@ export default function generateHtmlReportPivot(
         html += `<table>
             <thead>
                 <tr>
-                    ${groupHeaders.map(label => `<th>${label}</th>`).join('')}
-                    ${aggregationHeaders.map(label => `<th>${label}</th>`).join('')}
+                ${groupHeaders.map((label, idx) => `
+                    <th onclick="sortTable(event, ${idx})" data-sorted="">
+                    <div class="sortable-header">
+                        <span>${label}</span>
+                        <span class="sort-arrow">↓</span>
+                    </div>
+                    </th>`).join('')}
+                ${aggregationHeaders.map((label, idx) => `
+                    <th onclick="sortTable(event, ${groupHeaders.length + idx})" data-sorted="">
+                    <div class="sortable-header">
+                        <span>${label}</span>
+                        <span class="sort-arrow">↓</span>
+                    </div>
+                    </th>`).join('')}
                 </tr>
             </thead>
-            <tbody>`;
+        <tbody>
+        `;
 
         for (const row of section.result) {
             html += `<tr>
@@ -181,8 +171,21 @@ export default function generateHtmlReportPivot(
         </tr>`;
 
         html += `</tbody></table>`;
+
+
+        html += `<h2>${section.name}</h2>`;
+
+        // For each group field, show a breakdown
+        const groupFields = Object.keys(section.result[0]?.group || {});
+        for (const field of groupFields) {
+            html += renderGroupFieldBreakdown(section.result, field);
+        }
+
     }
 
+    html += `
+    <script src="${SERVER_URL}/report.js"></script>
+    `
     html += `</div></body></html>`;
     return html;
 }
@@ -222,4 +225,22 @@ function escapeHtml(unsafe: any): string {
         .replace(/'/g, "&#039;");
 }
 
+function renderGroupFieldBreakdown(result: GroupResult[], field: string): string {
+    const counts: Record<string, number> = {};
+
+    for (const row of result) {
+        const value = row.group?.[field] || 'unknown';
+        counts[value] = (counts[value] || 0) + (row.count || 1);
+    }
+
+    const entries = Object.entries(counts)
+        .sort((a, b) => b[1] - a[1]) // sort descending
+        .map(([val, count]) => `<li><strong>${val}:</strong> ${count}</li>`)
+        .join('');
+
+    return `<div style="margin-top:10px;margin-bottom:10px;">
+        <h4>Summary by <code>${field}</code></h4>
+        <ul>${entries}</ul>
+    </div>`;
+}
 

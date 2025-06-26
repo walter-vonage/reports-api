@@ -1,0 +1,107 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+}
+
+.container {
+    max-width: 960px;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 30px;
+}
+
+th,
+td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: #f4f4f4;
+}
+
+.indent-1 {
+    padding-left: 20px;
+}
+
+.indent-2 {
+    padding-left: 40px;
+}
+
+.bold {
+    font-weight: bold;
+    background-color: #f9f9f9;
+}
+
+.bar-container {
+    height: 20px;
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.bar {
+    height: 100%;
+    background: #007bff;
+}
+
+.totals {
+    background-color: #dfefff;
+}
+
+.json-cell {
+    background: #f0f8ff;
+    padding: 4px;
+    border: 1px dashed #007bff;
+    border-radius: 4px;
+    font-size: 90%;
+    margin-bottom: 2px;
+}
+
+.json-cell div {
+    margin-bottom: 2px;
+}
+
+.json-rest {
+    font-size: 90%;
+    color: #555;
+}
+
+.sortable-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.sort-arrow {
+    font-size: 14px;
+    color: #888;
+    transition: transform 0.2s ease;
+}
+
+/* Active sorting */
+th[data-sorted="asc"] .sort-arrow {
+    content: "↑";
+    color: #007bff;
+}
+
+th[data-sorted="desc"] .sort-arrow {
+    content: "↓";
+    color: #007bff;
+}
+
+/* Highlight for active column */
+th[data-sorted] {
+    background-color: #eef6ff;
+}
