@@ -59,9 +59,16 @@ export function generateEmailBody({
                 </p>
                 <p>
                     <a href="${SERVER_URL}/csv/${downloadCSVUrl}" style="background:#131415;color:#fff;font-size:14px;border-radius:4px;padding:10px 20px;text-decoration:none;display:inline-block;margin-top:12px">
-                        Download CSV
+                        Download Vonage's CSV
                     </a>
                 </p>
+                <!-- 
+                <p>
+                    <a href="${SERVER_URL}/ai/${downloadCSVUrl}" style="background:#131415;color:#fff;font-size:14px;border-radius:4px;padding:10px 20px;text-decoration:none;display:inline-block;margin-top:12px">
+                        Talk to the AI Agent
+                    </a>
+                </p>
+                -->
         
                 <p style="margin-top:20px;font-size:14px;color:#555">
                     If you didn’t request this report or believe this is an error, please 
@@ -81,6 +88,7 @@ export function generateEmailBody({
                     You received this because you're a registered Vonage APIs user. Do not reply to this email.<br>
                     Questions? Visit the <a href="https://developer.nexmo.com" style="color:#919eab;text-decoration:underline">docs</a> or get <a href="https://help.nexmo.com" style="color:#919eab;text-decoration:underline">support</a>.
                 </footer>
+                
             </div>
         </div>
     </div>

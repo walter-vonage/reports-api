@@ -12,6 +12,29 @@ export default function generateHtmlReportPivot(
 
     const useBlueBars = false;
 
+    /**
+     * Formats any possible JSON content inside any field
+     */
+    const formatCellValue = (val: string) => {
+        
+        if (typeof val == 'string') {
+            if (!val || val.toLowerCase() === 'undefined') return '';
+        }
+
+        const { parsed, rest } = tryParseJsonFragment(val);
+        if (!parsed) return escapeHtml(val); // escape normal strings
+
+        const parsedHtml = Object.entries(parsed)
+            .map(([k, v]) => `<div><strong>${escapeHtml(k)}:</strong> ${escapeHtml(String(v))}</div>`)
+            .join('');
+
+        return `
+            <div class="json-cell">${parsedHtml}</div>
+            ${rest ? `<div class="json-rest">${escapeHtml(rest)}</div>` : ''}
+        `;
+    };
+
+
     let html = `
     <html>
     <head>
@@ -26,6 +49,22 @@ export default function generateHtmlReportPivot(
         .bold { font-weight: bold; background-color: #f9f9f9; }
         .bar-container { height: 20px; background: #e9ecef; border-radius: 4px; overflow: hidden; }
         .bar { height: 100%; background: #007bff; }
+        .totals { background-color: #dfefff; }
+        .json-cell {
+            background: #f0f8ff;
+            padding: 4px;
+            border: 1px dashed #007bff;
+            border-radius: 4px;
+            font-size: 90%;
+            margin-bottom: 2px;
+        }
+        .json-cell div {
+            margin-bottom: 2px;
+        }
+        .json-rest {
+            font-size: 90%;
+            color: #555;
+        }
       </style>
     </head>
     <body>
@@ -80,17 +119,17 @@ export default function generateHtmlReportPivot(
     `;
 
     for (const section of groupSets) {
-        
+
         if (useBlueBars) {
             html += `<h2>${section.name}</h2>`;
-    
+
             // 1. Bar chart summary
             const summaryBars: { label: string; value: number }[] = section.result.map(gr => {
                 const label = Object.values(gr.group).join(" / ");
                 const count = gr.count || 0;
                 return { label, value: count };
             });
-    
+
             const maxValue = Math.max(...summaryBars.map(b => b.value));
             html += `<div style="margin-bottom: 20px;">`;
             for (const bar of summaryBars) {
@@ -111,49 +150,35 @@ export default function generateHtmlReportPivot(
         });
 
         const aggregationHeaders = Array.from(allAggs);
+        const groupHeaders = Object.keys(section.result[0]?.group || {});
+
         html += `<table>
             <thead>
                 <tr>
-                    <th>Group</th>
+                    ${groupHeaders.map(label => `<th>${label}</th>`).join('')}
                     ${aggregationHeaders.map(label => `<th>${label}</th>`).join('')}
                 </tr>
             </thead>
             <tbody>`;
 
-        // Group rows by first group field
-        const groupedByFirst: Record<string, GroupResult[]> = {};
         for (const row of section.result) {
-            const firstField = Object.keys(row.group)[0];
-            const firstValue = row.group[firstField];
-            groupedByFirst[firstValue] = groupedByFirst[firstValue] || [];
-            groupedByFirst[firstValue].push(row);
-        }
-
-        for (const [mainGroup, rows] of Object.entries(groupedByFirst)) {
-            html += `<tr class="bold">
-                <td>${mainGroup}</td>
-                ${aggregationHeaders.map(() => `<td></td>`).join('')}
-            </tr>`;
-
-            const totals: Record<string, number> = {};
-
-            for (const row of rows) {
-                const subLabel = Object.values(row.group).slice(1).join(' / ');
-                html += `<tr>
-                    <td class="indent-1">${subLabel}</td>
-                    ${aggregationHeaders.map(label => {
-                    const val = parseFloat(row.aggregations?.[label] || '0');
-                    totals[label] = (totals[label] || 0) + val;
-                    return `<td>${row.aggregations?.[label] || ''}</td>`;
-                }).join('')}
-                </tr>`;
-            }
-
-            html += `<tr class="bold">
-                <td>Total for ${mainGroup}</td>
-                ${aggregationHeaders.map(label => `<td>${totals[label]?.toFixed(2) || '0.00'}</td>`).join('')}
+            html += `<tr>
+                ${groupHeaders.map(field => `<td>${formatCellValue(row.group?.[field] || '')}</td>`).join('')}
+                ${aggregationHeaders.map(field => `<td>${formatCellValue(row.aggregations?.[field] || '')}</td>`).join('')}
             </tr>`;
         }
+
+        const totals: Record<string, number> = {};
+        section.result.forEach(row => {
+            aggregationHeaders.forEach(field => {
+                const val = parseFloat(row.aggregations?.[field] || '0');
+                totals[field] = (totals[field] || 0) + val;
+            });
+        });
+        html += `<tr class="bold totals">
+            ${groupHeaders.map(() => `<td></td>`).join('')}
+            ${aggregationHeaders.map(field => `<td>${totals[field]?.toFixed(2) || '0.00'}</td>`).join('')}
+        </tr>`;
 
         html += `</tbody></table>`;
     }
@@ -161,3 +186,40 @@ export default function generateHtmlReportPivot(
     html += `</div></body></html>`;
     return html;
 }
+
+/**
+ * If the content of any field has a JSON object, it will try to parse it
+ */
+function tryParseJsonFragment(value: string): { parsed?: any; rest?: string } {
+    if (typeof value !== 'string') return { parsed: undefined, rest: '' };
+
+    const trimmed = value.trim();
+
+    // This regex matches a full JSON object at the start of the string
+    const match = trimmed.match(/^({[\s\S]*?})(.*)$/);
+    if (!match) return { parsed: undefined, rest: value };
+
+    const rawJsonPart = match[1].replace(/\\"/g, '"'); // unescape quotes
+    try {
+        const parsed = JSON.parse(rawJsonPart);
+        console.log('Parsed JSON fragment:', parsed);
+        return { parsed, rest: match[2]?.trim() };
+    } catch {
+        return { parsed: undefined, rest: value };
+    }
+}
+
+
+function escapeHtml(unsafe: any): string {
+    if (typeof unsafe !== 'string') {
+        return String(unsafe ?? '');
+    }
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+

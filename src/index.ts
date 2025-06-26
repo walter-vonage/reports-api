@@ -13,6 +13,7 @@ import { Config } from './config';
 import VonageTellsUsReportIsReady from './work/vonage_tells_us_report_is_ready';
 import RunThisEveryMinute from './work/run_this_every_minute';
 import { callCronCheckAgain } from './work/utils';
+import AiProcessQuestion from './work/ai_process_question';
 const app = express();
 app.use(express.json());
 const port = process.env.VCR_PORT || 3000;
@@ -55,6 +56,47 @@ const upload = multer({
         fileSize: 5 * 1024 * 1024 * 1024, // 1GB in bytes
     },
 });
+
+/**
+ * AI ENDPOINTS
+ */
+app.get('/ai/:filename', (req, res) => {
+    const filename = req.params.filename;
+    res.send(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>ClearView AI Agent</title>
+            <script>window.reportFilename = "${filename}";</script>
+            <link rel="stylesheet" href="/chat.css" />
+        </head>
+        <body>
+            <div id="chat-container">
+                <div id="messages"></div>
+                <div id="input-area">
+                    <input type="text" id="input" placeholder="Ask me something..." />
+                    <button id="send">Send</button>
+                </div>
+            </div>
+            <script src="/chat.js"></script>
+        </body>
+        </html>
+    `);
+})
+
+app.post('/ask', express.json(), async (req, res) => {
+    const {
+        question,
+        filename
+    } = req.body;
+    const answer = await AiProcessQuestion(question, filename);
+    res.status(200).json({
+        answer
+    });
+});
+
 
 /**
  * REPORTS ENDPOINTS

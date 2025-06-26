@@ -58,7 +58,8 @@ export default async function VonageTellsUsReportIsReady(
         const authString = `Basic ${Buffer.from(`${decoded.VONAGE_USERNAME}:${decoded.VONAGE_PASSWORD}`).toString('base64')}`;
         const downloadUrl = _links.download_report.href;
         const DOWNLOAD_FOLDER = path.resolve(__dirname, '../downloads');
-        const filename = `report_${Date.now()}.csv`;
+        // const filename = `report_${Date.now()}.csv`;
+        const filename = `working_report.csv`;
         const filePath = path.join(DOWNLOAD_FOLDER, filename);
 
         // Download CSV file
