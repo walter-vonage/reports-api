@@ -16,17 +16,13 @@ export default function generateHtmlReportPivot(
 
     const useBlueBars = false;
 
-    /**
-     * Formats any possible JSON content inside any field
-     */
     const formatCellValue = (val: string) => {
-
         if (typeof val == 'string') {
             if (!val || val.toLowerCase() === 'undefined') return '';
         }
 
         const { parsed, rest } = tryParseJsonFragment(val);
-        if (!parsed) return escapeHtml(val); // escape normal strings
+        if (!parsed) return escapeHtml(val);
 
         const parsedHtml = Object.entries(parsed)
             .map(([k, v]) => `<div><strong>${escapeHtml(k)}:</strong> ${escapeHtml(String(v))}</div>`)
@@ -38,89 +34,23 @@ export default function generateHtmlReportPivot(
         `;
     };
 
-
     let html = `
     <html>
     <head>
-          <link rel="stylesheet" href="${SERVER_URL}/report.css">
+        <link rel="stylesheet" href="${SERVER_URL}/report.css">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     </head>
     <body>
     <div class="container">
 
     <h1>Reports API Summary</h1>
-    Version: ${VERSION}
-    
-    <div class="border rounded-4 pt-3 pb-3">
-        <table class="table">
-            <tr>
-                <td>Start date:</td>
-                <td>${startDate}</td>
-            </tr>
-            <tr>
-                <td>End date:</td>
-                <td>${endDate}</td>
-            </tr>
-            <tr>
-                <td>
-                    Product:
-                </td>
-                <td>
-                    ${product}
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    Include Subaccounts:
-                </td>
-                <td>
-                    ${include_subaccounts ? 'Yes' : 'No'}
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    Include Messages:
-                </td>
-                <td>
-                    ${include_messages ? 'Yes' : 'No'}
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    Direction:
-                </td>
-                <td>
-                    ${direction}
-                </td>
-            </tr>
-        </table>
-    </div>
+    <p>
+        Version: ${VERSION}
+    </p>
     `;
 
     for (const section of groupSets) {
 
-        if (useBlueBars) {
-
-            // 1. Bar chart summary
-            const summaryBars: { label: string; value: number }[] = section.result.map(gr => {
-                const label = Object.values(gr.group).join(" / ");
-                const count = gr.count || 0;
-                return { label, value: count };
-            });
-
-            const maxValue = Math.max(...summaryBars.map(b => b.value));
-            html += `<div style="margin-bottom: 20px;">`;
-            for (const bar of summaryBars) {
-                const width = ((bar.value / maxValue) * 100).toFixed(1);
-                html += `
-                    <div style="margin-bottom: 6px;">
-                        <div><strong>${bar.label}</strong> (${bar.value})</div>
-                        <div class="bar-container"><div class="bar" style="width:${width}%"></div></div>
-                    </div>`;
-            }
-            html += `</div>`;
-        }
-
-        // 2. Pivot table
         const allAggs = new Set<string>();
         section.result.forEach(gr => {
             Object.keys(gr.aggregations || {}).forEach(k => allAggs.add(k));
@@ -151,11 +81,30 @@ export default function generateHtmlReportPivot(
         <tbody>
         `;
 
+        const chartData: { date: string, value: number }[] = [];
+        const dateField = groupHeaders.find(h => h.toLowerCase().includes('date'));
+        const valueField = aggregationHeaders.find(h => h.toLowerCase().includes('total') || h.toLowerCase().includes('count'));
+
         for (const row of section.result) {
             html += `<tr>
-                ${groupHeaders.map(field => `<td>${formatCellValue(row.group?.[field] || '')}</td>`).join('')}
+                ${groupHeaders.map(field => {
+                let val = row.group?.[field] || '';
+                if (field.toLowerCase().includes('date') && typeof val === 'string') {
+                    val = val.split('T')[0];
+                }
+                return `<td>${formatCellValue(val)}</td>`;
+            }).join('')}
                 ${aggregationHeaders.map(field => `<td>${formatCellValue(row.aggregations?.[field] || '')}</td>`).join('')}
             </tr>`;
+
+            if (dateField && valueField) {
+                let dateVal = row.group?.[dateField] || '';
+                if (typeof dateVal === 'string') dateVal = dateVal.split('T')[0];
+                chartData.push({
+                    date: dateVal,
+                    value: parseFloat(row.aggregations?.[valueField] || '0')
+                });
+            }
         }
 
         const totals: Record<string, number> = {};
@@ -172,46 +121,67 @@ export default function generateHtmlReportPivot(
 
         html += `</tbody></table>`;
 
+        //  BUTTON TO DOWNLOAD PIVOT TABLE AS CSV
+        const downloadPivotAsCSV = `
+        <div class="pt-3 pb-3">
+            <button onclick="downloadCSV()" class="btn btn-secondary">Download CSV</button>
+        </div>        
+        `
+        html += downloadPivotAsCSV;
+
+        if (chartData.length) {
+            const sortedData = chartData.sort((a, b) => a.date.localeCompare(b.date));
+            const labels = sortedData.map(d => d.date);
+            const values = sortedData.map(d => d.value);
+            html += `
+            <h3>Chart: ${valueField} over ${dateField}</h3>
+            <canvas id="chart-${dateField}-${valueField}"></canvas>
+            <script>
+                const ctx = document.getElementById('chart-${dateField}-${valueField}').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ${JSON.stringify(labels)},
+                        datasets: [{
+                            label: '${valueField}',
+                            data: ${JSON.stringify(values)},
+                            fill: false,
+                            borderColor: 'blue',
+                            tension: 0.1
+                        }]
+                    }
+                });
+            </script>`;
+        }
 
         html += `<h2>${section.name}</h2>`;
-
-        // For each group field, show a breakdown
         const groupFields = Object.keys(section.result[0]?.group || {});
         for (const field of groupFields) {
             html += renderGroupFieldBreakdown(section.result, field);
         }
-
     }
 
     html += `
     <script src="${SERVER_URL}/report.js"></script>
-    `
-    html += `</div></body></html>`;
+    </div></body></html>`;
     return html;
 }
 
-/**
- * If the content of any field has a JSON object, it will try to parse it
- */
 function tryParseJsonFragment(value: string): { parsed?: any; rest?: string } {
     if (typeof value !== 'string') return { parsed: undefined, rest: '' };
 
     const trimmed = value.trim();
-
-    // This regex matches a full JSON object at the start of the string
     const match = trimmed.match(/^({[\s\S]*?})(.*)$/);
     if (!match) return { parsed: undefined, rest: value };
 
-    const rawJsonPart = match[1].replace(/\\"/g, '"'); // unescape quotes
+    const rawJsonPart = match[1].replace(/\\"/g, '"');
     try {
         const parsed = JSON.parse(rawJsonPart);
-        console.log('Parsed JSON fragment:', parsed);
         return { parsed, rest: match[2]?.trim() };
     } catch {
         return { parsed: undefined, rest: value };
     }
 }
-
 
 function escapeHtml(unsafe: any): string {
     if (typeof unsafe !== 'string') {
@@ -234,7 +204,14 @@ function renderGroupFieldBreakdown(result: GroupResult[], field: string): string
     }
 
     const entries = Object.entries(counts)
-        .sort((a, b) => b[1] - a[1]) // sort descending
+        .sort((a, b) => {
+            const dateA = Date.parse(a[0]);
+            const dateB = Date.parse(b[0]);
+            if (!isNaN(dateA) && !isNaN(dateB)) {
+                return dateA - dateB; // ascending date order
+            }
+            return b[1] - a[1]; // fallback: sort by count desc
+        })
         .map(([val, count]) => `<li><strong>${val}:</strong> ${count}</li>`)
         .join('');
 
@@ -243,4 +220,3 @@ function renderGroupFieldBreakdown(result: GroupResult[], field: string): string
         <ul>${entries}</ul>
     </div>`;
 }
-

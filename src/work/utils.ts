@@ -5,7 +5,7 @@ import axios from 'axios';
 export function callCronCheckAgain() {
     setTimeout(() => {
         axios.get(`${Config.SERVER_URL}/cron-runner`).catch(console.error);
-    }, 3000)
+    }, 60 * 1000)
 }
 
 export function calculateDateRangeFromSchedule(schedule: CronSchedule): { startDate: string; endDate: string } {

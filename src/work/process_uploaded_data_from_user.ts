@@ -53,12 +53,12 @@ export default async function ProcessUploadedDataFromUser(req: Request, res: Res
     //  Since we are coming from an uploaded file, some data is not obtained)
     const htmlContent = generateHtmlReport(
         reportResult.groupResults,
-        '',
-        '',
-        'SMS',
-        false,
-        false,
-        'outbound'
+        req.body.startDate,
+        req.body.endDate,
+        req.body.product,
+        req.body.include_subaccounts == "true" ? true : false,
+        req.body.include_messages == "true" ? true : false,
+        req.body.direction
     );
     
     // 7) Save the HTML version to a file
@@ -78,7 +78,6 @@ export default async function ProcessUploadedDataFromUser(req: Request, res: Res
     res.json({
         success: true,
         count: filteredRows.length,
-        reportResult,
         htmlPage: `${Config.SERVER_URL}/reports/${token}`
     })
     

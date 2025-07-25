@@ -13,39 +13,48 @@ export async function runReportJob(
     filteredRows: CsvRow[],
 ): Promise<{ success: boolean; groupResults: any[] }> {
 
-    // Extract report configuration from job
-    const groupBy = reportJob.groupBy;               // Fields or named groups to group the data by
-    const filterConfig = reportJob.filterConfig;     // Filtering logic already applied (optional)
-    const aggregations = reportJob.aggregations;     // Aggregation instructions (e.g. sum, count, etc.)
+    const groupBy = reportJob.groupBy;
+    const filterConfig = reportJob.filterConfig;
+    const aggregations = reportJob.aggregations;
 
-    // Will store each group result set
+    // Determine the list of fields to check (flatten if needed)
+    const groupFields = (groupBy as GroupConfig[])[0]?.fields
+        ? (groupBy as GroupConfig[]).flatMap(g => g.fields)
+        : (groupBy as string[]);
+
+    // Normalize date fields (truncate ISO timestamps to YYYY-MM-DD)
+    for (const row of filteredRows) {
+        for (const field of groupFields) {
+            const val = row[field];
+            if (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(val)) {
+                row[field] = val.slice(0, 10);
+            }
+        }
+    }
+
     const groupResults: { name: string; groupBy: string[]; result: GroupResult[] }[] = [];
 
-    // Determine whether groupBy is a named config (with .fields) or a simple string array
     if ((groupBy as GroupConfig[])[0]?.fields) {
-        // If groupBy is a list of named group configs (e.g. { name: "By Country", fields: ["country_name"] })
         const result = filterAndGroupReport(
             filteredRows,
             filterConfig,
             groupBy as GroupConfig[],
             aggregations,
         );
-        groupResults.push({ name: 'Grouped Report', groupBy: (groupBy as GroupConfig[]).flatMap(g => g.fields), result });
+        groupResults.push({ name: 'Grouped Report', groupBy: groupFields, result });
     } else {
-        // If groupBy is just an array of strings like ["status", "country_name"]
-        const fields = groupBy as string[];
         const result = filterAndGroupReport(
             filteredRows, 
             filterConfig, 
-            fields, 
+            groupFields, 
             aggregations, 
         );
-        groupResults.push({ name: `Grouped by ${fields.join(', ')}`, groupBy: fields, result });
+        groupResults.push({ name: `Grouped by ${groupFields.join(', ')}`, groupBy: groupFields, result });
     }
 
-    // Return the grouping output
     return { success: true, groupResults };
 }
+
 
 
 

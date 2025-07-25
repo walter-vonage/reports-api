@@ -7,7 +7,7 @@ import initiateDownloadReport from './download_report';
 export default async function RunThisEveryMinute(
     CUSTOMER_SECRETS: Array<CustomerSecret>
 ) {
-    console.log(`[${new Date().toISOString()}] Checking scheduled tasks...`);
+    // console.log(`[${new Date().toISOString()}] Checking scheduled tasks...`);
 
     for (const [jobId, scheduledTask] of scheduledJobs.entries()) {
         const { meta: cron, req, res } = scheduledTask;

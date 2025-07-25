@@ -48,3 +48,38 @@ function sortTable(event, colIndex) {
     dataRows.forEach(row => tbody.appendChild(row));
     if (isTotalRow) tbody.appendChild(lastRow);
 }
+
+function downloadCSV() {
+    let csv = [];
+    const tables = document.querySelectorAll('table');
+
+    tables.forEach((table, tableIndex) => {
+        const rows = table.querySelectorAll('tr');
+        if (tableIndex > 0) csv.push(''); // Separate tables
+
+        rows.forEach((row, rowIndex) => {
+            const cols = row.querySelectorAll('th, td');
+            const rowData = Array.from(cols).map(col => {
+                // Clean up arrows or extra sorting symbols
+                let text = col.textContent.trim().replace(/[↑↓]/g, '').trim();
+                text = text.replace(/"/g, '""'); // escape quotes
+                return `"${text}"`;
+            });
+
+            // Only push rows that have some data (avoid empty rows)
+            if (rowData.some(cell => cell.replace(/"/g, '').trim() !== '')) {
+                csv.push(rowData.join(','));
+            }
+        });
+    });
+
+    const blob = new Blob([csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'pivot_report.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
