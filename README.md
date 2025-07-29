@@ -3,6 +3,12 @@ This project performs several tasks using Vonage Reports API.
 1) Based on your parameters, it will download a report from Reports API.
 2) Once the report is downloaded, it will apply FILTERS and GROUPING you define from your JSON request.
 
+## UI to send requests
+Now we have an UI
+
+https://neru-74c96a88-reportsapiui-dev.euw1.runtime.vonage.cloud/
+
+
 ## Example of JSON to send
 Let's see some examples of what you can send:
 ```
