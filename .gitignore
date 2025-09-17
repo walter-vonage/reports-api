@@ -26,3 +26,7 @@ yarn.lock
 
 # Other folders
 OTHER/
+
+*.yml
+vcr-accor-yml
+vcr-walter-yml
