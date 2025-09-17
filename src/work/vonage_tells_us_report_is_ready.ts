@@ -25,13 +25,13 @@ export default async function VonageTellsUsReportIsReady(
 
     if (!_links?.download_report?.href) {
         console.log('Missing download link');
-        return res.status(400).json({ message: 'Missing download link' });
+        return res.status(200).json({ message: 'Missing download link' });
     }
 
     const token = req.params.token as string;
     if (!token) {
         console.log('Missing token in callback');
-        return res.status(400).json({ message: 'Missing token in callback' });
+        return res.status(200).json({ message: 'Missing token in callback' });
     }
         
     // Decode request context from token
@@ -143,7 +143,7 @@ export default async function VonageTellsUsReportIsReady(
         const token = jwt.sign({ 
             filePath: htmlPath
             }, process.env.JWT_SECRET || 'secret123', {
-            expiresIn: '5d',
+            expiresIn: '60d',
         });
 
         //  9) Send the email if needed
@@ -161,16 +161,26 @@ export default async function VonageTellsUsReportIsReady(
                 reportName: groupLabel,
                 downloadUrl: `${Config.SERVER_URL}/reports/${token}`
                 });
-                
-            await sendReportEmail(decoded.emailTo, Config.EMAIL_SUBJECT, html);
-            console.log(`Email sent to ${decoded.emailTo}`);
+            
+            // Split emails and trim each one
+            const emailToList = decoded.emailTo
+                .split(',')
+                .map(email => email.trim())
+                .filter(email => email.length > 0);
+
+            for (const email of emailToList) {
+                await sendReportEmail(email, Config.EMAIL_SUBJECT, html);
+                console.log(`Email sent to ${email}`);
+            }
         }
 
         // 10) inform
         console.log(`Report processed ${request_id}`);
+        return res.status(200).json({ success: true });
 
     } catch (err: any) {
         console.error(`Error checking report ${request_id}:`, err.stack || err.message || err);
+        return res.status(200).json({ message: 'Error checking report: ' + err.message });
     }
 
 }

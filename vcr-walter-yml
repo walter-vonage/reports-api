@@ -1,0 +1,15 @@
+project:
+    name: reports-api
+instance:
+    name: prod
+    runtime: nodejs18
+    region: aws.euw1
+    application-id: 47a66867-443c-45e0-9483-cce07f5efa00
+    entrypoint:
+        - node
+        - index.js
+debug:
+    application-id: 47a66867-443c-45e0-9483-cce07f5efa00
+    entrypoint:
+        - node
+        - index.js

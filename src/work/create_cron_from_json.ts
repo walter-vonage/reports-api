@@ -80,6 +80,9 @@ export function stopScheduledJobById(cronId: string): boolean {
 }
 
 
-export function listScheduledJobs(): CronSchedule[] {
-    return Array.from(scheduledJobs.values()).map(task => task.meta);
+export function listScheduledJobs(): (CronSchedule & { cronId: string })[] {
+    return Array.from(scheduledJobs.entries()).map(([cronId, task]) => ({
+        cronId,       // <-- the actual cron ID
+        ...task.meta  // <-- existing meta data
+    }));
 }
